@@ -1,0 +1,5591 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>СВОЯК — Бильярдный клуб | Игра. Отдых. Развитие.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-dark: #060908;
+      --bg-card: #0e1713;
+      --gold: #e7bc86;
+      --gold-light: #f6dcb6;
+      --burgundy: #7a1c2b;
+      --text-main: #f4f3ef;
+      --text-muted: #a3ada7;
+      --container: 1180px;
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button, input, select {
+      font-family: inherit;
+    }
+
+    .container {
+      width: 100%;
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 28px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .section-block {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding: 96px 0;
+      overflow: hidden;
+    }
+
+    .section-block > .container {
+      width: 100%;
+    }
+
+    /* Красивое разделение между блоками с золотым акцентом по центру */
+    .section-divider {
+      position: relative;
+      height: 1px;
+      width: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(231, 188, 134, 0.14) 22%,
+        rgba(231, 188, 134, 0.48) 50%,
+        rgba(231, 188, 134, 0.14) 78%,
+        transparent 100%
+      );
+      z-index: 4;
+    }
+
+    .section-divider::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      transform: translate(-50%, -50%) rotate(45deg);
+      background: #08120e;
+      border: 1.5px solid var(--gold);
+      box-shadow: 0 0 14px rgba(231, 188, 134, 0.45);
+    }
+
+    /* ================= AMBIENT SPOTLIGHT & CUE RING ================= */
+    .ambient-spotlight {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      background: radial-gradient(
+        540px circle at var(--mx, 50%) var(--my, 50%),
+        rgba(231, 188, 134, 0.055),
+        rgba(18, 92, 60, 0.04) 42%,
+        transparent 75%
+      );
+    }
+
+    .cue-cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(231, 188, 134, 0.45);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1000;
+      transform: translate(-50%, -50%);
+      transition: width 0.25s var(--ease-out-expo),
+                  height 0.25s var(--ease-out-expo),
+                  border-color 0.25s ease,
+                  background-color 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cue-cursor::after {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      transition: transform 0.25s ease;
+    }
+
+    .cue-cursor.is-hover {
+      width: 46px;
+      height: 46px;
+      border-color: var(--gold);
+      background-color: rgba(231, 188, 134, 0.08);
+    }
+
+    .cue-cursor.is-hover::after {
+      transform: scale(0.5);
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      .cue-cursor, .ambient-spotlight {
+        display: none;
+      }
+    }
+
+    /* ================= КОНТРАСТНЫЕ КНОПКИ ================= */
+    .btn-gold {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #f5deb8 0%, #dfa462 100%);
+      color: #14100a;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 241, 214, 0.45);
+      cursor: pointer;
+      transition: transform 0.35s var(--ease-out-expo), box-shadow 0.3s ease, filter 0.3s ease;
+      box-shadow: 0 10px 28px rgba(223, 164, 98, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      white-space: nowrap;
+      will-change: transform;
+    }
+
+    .btn-gold::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -120%;
+      width: 70%;
+      height: 100%;
+      background: linear-gradient(
+        115deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.55) 50%,
+        transparent 100%
+      );
+      transform: skewX(-20deg);
+      animation: btnShimmer 4.5s infinite ease-in-out;
+      pointer-events: none;
+    }
+
+    @keyframes btnShimmer {
+      0%, 65% { left: -120%; }
+      100% { left: 160%; }
+    }
+
+    .btn-gold:hover {
+      filter: brightness(1.06);
+      box-shadow: 0 14px 36px rgba(223, 164, 98, 0.45);
+    }
+
+    .btn-gold svg {
+      transition: transform 0.3s var(--ease-out-expo);
+    }
+
+    .btn-gold:hover svg {
+      transform: translateX(4px);
+    }
+
+    .btn-outline {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(12, 22, 17, 0.85);
+      color: var(--text-main);
+      font-weight: 500;
+      font-size: 13.5px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(231, 188, 134, 0.42);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+      white-space: nowrap;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--gold-light);
+      color: var(--gold-light);
+      background: rgba(231, 188, 134, 0.14);
+      box-shadow: 0 10px 26px rgba(231, 188, 134, 0.16);
+    }
+
+    .btn-outline svg {
+      transition: transform 0.3s var(--ease-out-expo);
+    }
+
+    .btn-outline:hover svg {
+      transform: translateX(4px);
+    }
+
+    /* ================= ПРЕМИАЛЬНЫЙ ЛОГОТИП ================= */
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .logo-emblem {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: transform 0.45s var(--ease-out-expo), filter 0.35s ease;
+    }
+
+    .logo:hover .logo-emblem {
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 12px rgba(231, 188, 134, 0.45));
+    }
+
+    .logo-ring-stroke {
+      stroke-dasharray: 160;
+      stroke-dashoffset: 160;
+      animation: drawRing 1.5s var(--ease-out-expo) forwards;
+    }
+
+    .logo-tri-stroke {
+      stroke-dasharray: 120;
+      stroke-dashoffset: 120;
+      animation: drawRing 1.2s var(--ease-out-expo) 0.15s forwards;
+    }
+
+    .logo-dot {
+      opacity: 0;
+      transform-origin: center;
+      animation: dotAppear 0.5s var(--ease-out-expo) forwards;
+    }
+
+    @keyframes drawRing {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes dotAppear {
+      0% { opacity: 0; transform: scale(0.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 21px;
+      letter-spacing: 0.14em;
+      line-height: 1;
+      background: linear-gradient(90deg, #ffffff 0%, #f5dfb9 55%, #dfb072 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-divider-line {
+      height: 1px;
+      width: 100%;
+      background: linear-gradient(90deg, rgba(231, 188, 134, 0.65), transparent);
+      margin: 5px 0 4px;
+    }
+
+    .logo-sub {
+      font-size: 8.5px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    /* ================= HERO + STICKY GLASS HEADER ================= */
+    .hero-wrapper {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg-layer {
+      position: absolute;
+      inset: -4%;
+      background:
+        radial-gradient(circle at 75% 45%, rgba(18, 96, 62, 0.42) 0%, rgba(6, 10, 8, 0.9) 62%),
+        linear-gradient(90deg, rgba(5, 8, 7, 0.95) 0%, rgba(5, 8, 7, 0.68) 52%, rgba(5, 8, 7, 0.38) 100%),
+        url('images/hero.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: contrast(1.1) saturate(1.14) brightness(0.95);
+      animation: heroZoom 22s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+
+    .hero-vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 45%, transparent 45%, rgba(3, 6, 5, 0.72) 100%),
+        linear-gradient(180deg, rgba(5, 8, 7, 0.45) 0%, transparent 25%, transparent 72%, rgba(5, 8, 7, 0.85) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes heroZoom {
+      0% { transform: scale(1) translate3d(0, 0, 0); }
+      100% { transform: scale(1.07) translate3d(-1%, -1%, 0); }
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 0;
+      z-index: 60;
+      transition: padding 0.35s var(--ease-out-expo),
+                  background-color 0.35s ease,
+                  backdrop-filter 0.35s ease,
+                  border-color 0.35s ease;
+      border-bottom: 1px solid transparent;
+    }
+
+    .header.is-scrolled {
+      padding: 13px 0;
+      background-color: rgba(6, 11, 9, 0.9);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom-color: rgba(231, 188, 134, 0.22);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .nav a {
+      font-size: 13px;
+      color: rgba(244, 243, 239, 0.86);
+      transition: color 0.25s ease;
+      position: relative;
+      padding: 4px 0;
+      white-space: nowrap;
+    }
+
+    .nav a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 1.5px;
+      background: var(--gold);
+      transition: width 0.3s var(--ease-out-expo);
+    }
+
+    .nav a:hover {
+      color: var(--gold);
+    }
+
+    .nav a:hover::after {
+      width: 100%;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header .btn-gold {
+      padding: 11px 22px;
+      font-size: 13.5px;
+    }
+
+    /* ================= КНОПКА БУРГЕР (3 ПОЛОСОЧКИ) И МОБИЛЬНОЕ МЕНЮ ================= */
+    .burger-btn {
+      display: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(14, 24, 19, 0.9);
+      border: 1px solid rgba(231, 188, 134, 0.38);
+      color: var(--gold);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 5px;
+      padding: 0;
+      transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+      z-index: 80;
+    }
+
+    .burger-btn:hover {
+      border-color: var(--gold-light);
+      background: rgba(231, 188, 134, 0.14);
+    }
+
+    .burger-line {
+      width: 19px;
+      height: 2px;
+      background: var(--gold-light);
+      border-radius: 2px;
+      transition: transform 0.35s var(--ease-out-expo), opacity 0.25s ease, width 0.3s ease;
+    }
+
+    .burger-btn.is-open .burger-line:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .burger-btn.is-open .burger-line:nth-child(2) {
+      opacity: 0;
+      width: 0;
+    }
+
+    .burger-btn.is-open .burger-line:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    .mobile-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 5, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 65;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    .mobile-drawer-backdrop.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(320px, 84vw);
+      background: linear-gradient(165deg, #101b16 0%, #060a08 100%);
+      border-left: 1px solid rgba(231, 188, 134, 0.28);
+      box-shadow: -20px 0 55px rgba(0, 0, 0, 0.85);
+      z-index: 70;
+      padding: 24px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transform: translateX(104%);
+      transition: transform 0.42s var(--ease-out-expo);
+      overflow-y: auto;
+    }
+
+    .mobile-drawer.is-open {
+      transform: translateX(0);
+    }
+
+    .mobile-drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(231, 188, 134, 0.16);
+      margin-bottom: 18px;
+    }
+
+    .mobile-drawer-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .mobile-drawer-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(231, 188, 134, 0.25);
+      color: var(--text-main);
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .mobile-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mobile-nav-list a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #f4f3ef;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      transition: all 0.25s ease;
+    }
+
+    .mobile-nav-list a:hover,
+    .mobile-nav-list a:active {
+      background: rgba(231, 188, 134, 0.1);
+      border-color: rgba(231, 188, 134, 0.3);
+      color: var(--gold-light);
+      transform: translateX(4px);
+    }
+
+    .mobile-drawer-footer {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(231, 188, 134, 0.16);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mobile-drawer-info {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .hero-content {
+      padding: 112px 0 54px;
+      max-width: 650px;
+    }
+
+    .hero-anim {
+      opacity: 0;
+      transform: translateY(28px);
+      animation: heroReveal 1s var(--ease-out-expo) forwards;
+    }
+    .hero-anim-1 { animation-delay: 0.15s; }
+    .hero-anim-2 { animation-delay: 0.3s; }
+    .hero-anim-3 { animation-delay: 0.45s; }
+    .hero-anim-4 { animation-delay: 0.6s; }
+
+    @keyframes heroReveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-kicker {
+      font-size: 28px;
+      font-weight: 400;
+      color: #eae8e1;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+
+    .hero-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: clamp(52px, 7.5vw, 90px);
+      font-weight: 800;
+      line-height: 0.96;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #ffffff 30%, #d8d3c8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+    }
+
+    .hero-subtitle {
+      font-size: 19px;
+      font-weight: 400;
+      color: rgba(244, 243, 239, 0.9);
+      letter-spacing: 0.02em;
+      margin-bottom: 38px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    .hero-divider {
+      width: 1px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .hero-video-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: #f4f3ef;
+      font-size: 14px;
+      font-weight: 500;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.25s ease;
+    }
+
+    .hero-video-btn:hover {
+      color: var(--gold);
+    }
+
+    .play-circle {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(231, 188, 134, 0.45);
+      background: rgba(12, 22, 17, 0.75);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .play-circle::before {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 1px solid rgba(231, 188, 134, 0.35);
+      animation: pulseRing 2.6s infinite ease-out;
+    }
+
+    @keyframes pulseRing {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      100% { transform: scale(1.45); opacity: 0; }
+    }
+
+    .hero-video-btn:hover .play-circle {
+      border-color: var(--gold);
+      background: rgba(231, 188, 134, 0.18);
+      transform: scale(1.08);
+    }
+
+    /* ================= АВТОРСКИЕ КОНТРАСТНЫЕ ФОНЫ СЕКЦИЙ ================= */
+    .features-bar {
+      background:
+        radial-gradient(ellipse 55% 42% at 50% 0%, rgba(231, 188, 134, 0.08) 0%, transparent 70%),
+        radial-gradient(circle at 12% 85%, rgba(16, 82, 54, 0.26) 0%, transparent 48%),
+        radial-gradient(circle at 88% 80%, rgba(18, 94, 62, 0.22) 0%, transparent 50%),
+        linear-gradient(180deg, #070c09 0%, #050807 100%);
+    }
+
+    .features-header {
+      text-align: center;
+      max-width: 620px;
+      margin: 0 auto 56px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .feature-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 28px 24px;
+      border-radius: 18px;
+      background: linear-gradient(165deg, #111c17 0%, #090e0c 100%);
+      border: 1px solid rgba(231, 188, 134, 0.18);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: background-color 0.35s ease, transform 0.35s var(--ease-out-expo), border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .feature-item:hover {
+      border-color: rgba(231, 188, 134, 0.52);
+      box-shadow: 0 22px 44px rgba(0, 0, 0, 0.6), 0 0 24px rgba(231, 188, 134, 0.1);
+      transform: translateY(-6px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      border-radius: 12px;
+      background: rgba(231, 188, 134, 0.11);
+      border: 1px solid rgba(231, 188, 134, 0.22);
+      transition: transform 0.4s var(--ease-out-expo), filter 0.3s ease;
+    }
+
+    .feature-item:hover .feature-icon {
+      transform: scale(1.1) rotate(-4deg);
+      filter: drop-shadow(0 0 10px rgba(231, 188, 134, 0.45));
+    }
+
+    .feature-text {
+      font-size: 16px;
+      line-height: 1.4;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .feature-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.52;
+    }
+
+    .directions-section {
+      background:
+        radial-gradient(circle at 18% 35%, rgba(16, 86, 56, 0.25) 0%, transparent 52%),
+        radial-gradient(circle at 82% 72%, rgba(231, 188, 134, 0.07) 0%, transparent 48%),
+        linear-gradient(180deg, #050807 0%, #08110d 50%, #050807 100%);
+    }
+
+    .directions-layout {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .directions-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      padding: 28px 24px;
+      border-radius: 20px;
+      background: rgba(9, 15, 12, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .section-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: clamp(28px, 3.5vw, 42px);
+      font-weight: 700;
+      line-height: 1.14;
+      color: #ffffff;
+      margin-bottom: 18px;
+    }
+
+    .section-desc {
+      font-size: 15px;
+      line-height: 1.62;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .directions-info .btn-outline {
+      align-self: flex-start;
+    }
+
+    .directions-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      perspective: 1100px;
+    }
+
+    .dir-card {
+      position: relative;
+      height: 390px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(231, 188, 134, 0.22);
+      box-shadow: 0 20px 44px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 22px;
+      transition: border-color 0.35s ease, box-shadow 0.35s ease;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .dir-card:hover {
+      border-color: rgba(231, 188, 134, 0.65);
+      box-shadow: 0 26px 52px rgba(0, 0, 0, 0.7), 0 0 24px rgba(231, 188, 134, 0.14);
+    }
+
+    .dir-card-bg {
+      position: absolute;
+      inset: -6%;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.65s var(--ease-out-expo);
+      z-index: 0;
+    }
+
+    .dir-card-bg--pool {
+      filter: contrast(1.08) saturate(1.12);
+    }
+
+    .dir-card:hover .dir-card-bg {
+      transform: scale(1.09);
+    }
+
+    .dir-card-glare {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at var(--gx, 50%) var(--gy, 50%),
+        rgba(255, 255, 255, 0.22) 0%,
+        transparent 60%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .dir-card:hover .dir-card-glare {
+      opacity: 1;
+    }
+
+    .dir-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(6, 9, 8, 0.12) 26%, rgba(5, 8, 7, 0.94) 100%);
+      z-index: 1;
+    }
+
+    .dir-card-footer {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+      transform: translateZ(20px);
+    }
+
+    .dir-card-title {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #ffffff;
+    }
+
+    .dir-card-arrow {
+      color: var(--gold);
+      transition: transform 0.3s var(--ease-out-expo), color 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .dir-card:hover .dir-card-arrow {
+      color: var(--gold-light);
+      transform: translateX(5px);
+    }
+
+    /* ================= УСЛОВИЯ, СТОЛЫ И ДЕТАЛИ СО СКРИНШОТА ================= */
+    .details-section {
+      background:
+        radial-gradient(circle at 14% 25%, rgba(231, 188, 134, 0.08) 0%, transparent 48%),
+        radial-gradient(circle at 86% 78%, rgba(18, 92, 60, 0.26) 0%, transparent 52%),
+        linear-gradient(180deg, #050807 0%, #08110d 50%, #050807 100%);
+    }
+
+    .details-top {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .highlights-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .highlight-chip {
+      padding: 18px 20px;
+      border-radius: 16px;
+      background: linear-gradient(155deg, rgba(231, 188, 134, 0.12) 0%, rgba(10, 18, 14, 0.92) 100%);
+      border: 1px solid rgba(231, 188, 134, 0.28);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
+      transition: transform 0.3s var(--ease-out-expo), border-color 0.3s ease;
+    }
+
+    .highlight-chip:hover {
+      transform: translateY(-4px);
+      border-color: rgba(231, 188, 134, 0.55);
+    }
+
+    .highlight-val {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--gold-light);
+      line-height: 1.15;
+      margin-bottom: 4px;
+    }
+
+    .highlight-lbl {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .details-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .filter-btn {
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(231, 188, 134, 0.24);
+      background: #0d1612;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.28s var(--ease-out-expo);
+    }
+
+    .filter-btn:hover {
+      color: #ffffff;
+      border-color: rgba(231, 188, 134, 0.52);
+    }
+
+    .filter-btn.is-active {
+      background: linear-gradient(135deg, #f5deb8 0%, #dfa462 100%);
+      color: #14100a;
+      border-color: transparent;
+      font-weight: 700;
+      box-shadow: 0 8px 22px rgba(223, 164, 98, 0.28);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+    }
+
+    .detail-card {
+      padding: 26px;
+      border-radius: 20px;
+      background: linear-gradient(165deg, #111c17 0%, #090e0c 100%);
+      border: 1px solid rgba(231, 188, 134, 0.2);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48);
+      transition: transform 0.35s var(--ease-out-expo), border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .detail-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(231, 188, 134, 0.5);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.62);
+    }
+
+    .detail-card.is-hidden {
+      display: none;
+    }
+
+    .detail-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(231, 188, 134, 0.14);
+    }
+
+    .detail-card-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .detail-card-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .detail-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .detail-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 13px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(231, 188, 134, 0.16);
+      font-size: 13px;
+      color: #eceae3;
+      transition: border-color 0.25s ease, background 0.25s ease;
+    }
+
+    .detail-pill:hover {
+      border-color: rgba(231, 188, 134, 0.42);
+      background: rgba(231, 188, 134, 0.08);
+    }
+
+    .detail-pill strong {
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    .detail-pill--warn {
+      border-color: rgba(217, 107, 67, 0.35);
+      background: rgba(217, 107, 67, 0.08);
+      color: #f3c6b6;
+    }
+
+    /* ================= ТОЧНОСТЬ В КАЖДОЙ ДЕТАЛИ ================= */
+    .formats-showcase {
+      background:
+        radial-gradient(circle at 72% 48%, rgba(18, 96, 62, 0.24) 0%, transparent 55%),
+        radial-gradient(circle at 20% 25%, rgba(231, 188, 134, 0.06) 0%, transparent 45%),
+        linear-gradient(180deg, #050807 0%, #07100c 50%, #050807 100%);
+    }
+
+    .formats-grid {
+      display: grid;
+      grid-template-columns: 0.92fr 1.18fr;
+      gap: 44px;
+      align-items: center;
+    }
+
+    .format-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .format-tab {
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(231, 188, 134, 0.24);
+      background: #0d1612;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .format-tab:hover {
+      border-color: rgba(231, 188, 134, 0.55);
+      color: #ffffff;
+    }
+
+    .format-tab.is-active {
+      background: linear-gradient(135deg, #f5deb8 0%, #dfa462 100%);
+      color: #14100a;
+      border-color: transparent;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(223, 164, 98, 0.3);
+    }
+
+    .format-panel {
+      background: linear-gradient(160deg, #101b16 0%, #090e0c 100%);
+      border: 1px solid rgba(231, 188, 134, 0.24);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.5);
+    }
+
+    .format-panel-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 21px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    .format-panel-text {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .format-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat-box {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(231, 188, 134, 0.14);
+    }
+
+    .stat-val {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .stat-lbl {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .power-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .power-range {
+      flex: 1;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    .table-sim-card {
+      position: relative;
+      border-radius: 22px;
+      padding: 22px;
+      background: linear-gradient(145deg, #10241b 0%, #08120e 100%);
+      border: 1px solid rgba(231, 188, 134, 0.34);
+      box-shadow: 0 28px 65px rgba(0, 0, 0, 0.68);
+    }
+
+    .table-sim-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .table-sim-badge {
+      font-size: 11.5px;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .table-canvas-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: crosshair;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    #billiardCanvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 16px;
+      touch-action: none;
+    }
+
+    .table-sim-hint {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .potted-counter {
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+
+    /* ================= О КЛУБЕ + ТРЕНЕР ================= */
+    .about-section {
+      background:
+        radial-gradient(circle at 82% 45%, rgba(18, 92, 60, 0.25) 0%, transparent 52%),
+        radial-gradient(circle at 15% 75%, rgba(231, 188, 134, 0.06) 0%, transparent 45%),
+        linear-gradient(180deg, #050807 0%, #08120e 52%, #050807 100%);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 44px;
+      align-items: center;
+    }
+
+    .about-left-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .about-photo {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      height: 295px;
+      border: 1px solid rgba(231, 188, 134, 0.24);
+      box-shadow: 0 24px 55px rgba(0, 0, 0, 0.6);
+    }
+
+    .about-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.9s var(--ease-out-expo);
+    }
+
+    .about-photo:hover img {
+      transform: scale(1.05);
+    }
+
+    .about-photo-caption {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(6, 10, 8, 0.84);
+      border: 1px solid rgba(231, 188, 134, 0.35);
+      font-size: 12px;
+      color: var(--gold-light);
+      backdrop-filter: blur(8px);
+    }
+
+    .coach-embedded-card {
+      display: grid;
+      grid-template-columns: 155px 1fr;
+      gap: 20px;
+      align-items: center;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #111d17 0%, #090e0c 100%);
+      border: 1px solid rgba(231, 188, 134, 0.28);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+      transition: transform 0.35s var(--ease-out-expo), border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .coach-embedded-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(231, 188, 134, 0.58);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.65), 0 0 22px rgba(231, 188, 134, 0.12);
+    }
+
+    .coach-card-img {
+      width: 155px;
+      height: 142px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(231, 188, 134, 0.3);
+    }
+
+    .coach-card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 20%;
+      display: block;
+      transition: transform 0.6s var(--ease-out-expo);
+    }
+
+    .coach-embedded-card:hover .coach-card-img img {
+      transform: scale(1.06);
+    }
+
+    .coach-card-tag {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .coach-card-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .coach-card-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .about-content {
+      padding: 32px;
+      border-radius: 22px;
+      background: rgba(9, 15, 12, 0.78);
+      border: 1px solid rgba(231, 188, 134, 0.16);
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+    }
+
+    .about-mini-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 28px 0 34px;
+    }
+
+    .mini-feat {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: transform 0.3s var(--ease-out-expo), border-color 0.3s ease;
+    }
+
+    .mini-feat:hover {
+      transform: translateY(-3px);
+      border-color: rgba(231, 188, 134, 0.35);
+    }
+
+    .mini-feat-icon {
+      color: var(--gold);
+      width: 30px;
+      height: 30px;
+      transition: filter 0.3s ease;
+    }
+
+    .mini-feat:hover .mini-feat-icon {
+      filter: drop-shadow(0 0 8px rgba(231, 188, 134, 0.5));
+    }
+
+    .mini-feat-label {
+      font-size: 13px;
+      line-height: 1.35;
+      color: #ebe9e2;
+    }
+
+    /* ================= ТУРНИРЫ И КЛУБНАЯ ЖИЗНЬ ================= */
+    .events-section {
+      background:
+        radial-gradient(circle at 20% 25%, rgba(231, 188, 134, 0.07) 0%, transparent 45%),
+        radial-gradient(circle at 82% 75%, rgba(16, 86, 56, 0.25) 0%, transparent 50%),
+        linear-gradient(180deg, #050807 0%, #070e0b 50%, #050807 100%);
+    }
+
+    .events-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .event-card {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      background: linear-gradient(165deg, #101b16 0%, #080d0b 100%);
+      border: 1px solid rgba(231, 188, 134, 0.2);
+      box-shadow: 0 20px 46px rgba(0, 0, 0, 0.55);
+      transition: transform 0.4s var(--ease-out-expo), border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .event-card-media {
+      position: relative;
+      height: 175px;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(231, 188, 134, 0.16);
+    }
+
+    .event-card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.65s var(--ease-out-expo);
+    }
+
+    .event-card:hover .event-card-media img {
+      transform: scale(1.07);
+    }
+
+    .event-card-media::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 20%, rgba(10, 18, 14, 0.92) 100%);
+    }
+
+    .event-card-body {
+      padding: 24px 28px 28px;
+    }
+
+    .event-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      transition: left 0.7s var(--ease-out-expo);
+      z-index: 3;
+    }
+
+    .event-card:hover::before {
+      left: 100%;
+    }
+
+    .event-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(231, 188, 134, 0.55);
+      box-shadow: 0 26px 54px rgba(0, 0, 0, 0.68);
+    }
+
+    .event-num {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .event-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+
+    .event-desc {
+      font-size: 13.8px;
+      line-height: 1.58;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .event-meta {
+      font-size: 12.5px;
+      color: var(--gold-light);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(231, 188, 134, 0.1);
+      border: 1px solid rgba(231, 188, 134, 0.28);
+    }
+
+    /* ================= ОТЗЫВЫ ИЗ ЯНДЕКС КАРТ (3D КАРУСЕЛЬ) ================= */
+    .reviews-section {
+      background:
+        radial-gradient(circle at 22% 30%, rgba(231, 188, 134, 0.085) 0%, transparent 48%),
+        radial-gradient(circle at 80% 72%, rgba(18, 92, 60, 0.28) 0%, transparent 52%),
+        linear-gradient(180deg, #050807 0%, #08120e 50%, #050807 100%);
+    }
+
+    .reviews-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+
+    .yandex-rating-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      border-radius: 999px;
+      background: linear-gradient(155deg, rgba(231, 188, 134, 0.13) 0%, rgba(12, 22, 17, 0.92) 100%);
+      border: 1px solid rgba(231, 188, 134, 0.34);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.48);
+    }
+
+    .yandex-pin {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4b3a 0%, #d92b1c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(255, 75, 58, 0.4);
+      flex-shrink: 0;
+    }
+
+    .yandex-rating-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .yandex-rating-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: #ffffff;
+    }
+
+    .yandex-stars-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      color: #ffcc00;
+    }
+
+    .yandex-rating-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .reviews-carousel-wrapper {
+      position: relative;
+      width: 100%;
+      user-select: none;
+    }
+
+    .reviews-stage {
+      position: relative;
+      height: 360px;
+      perspective: 1400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .review-slide {
+      position: absolute;
+      width: min(560px, 88vw);
+      min-height: 295px;
+      padding: 30px 32px;
+      border-radius: 22px;
+      background: linear-gradient(160deg, rgba(18, 30, 25, 0.96) 0%, rgba(9, 14, 12, 0.98) 100%);
+      border: 1px solid rgba(231, 188, 134, 0.22);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      transition: transform 0.72s var(--ease-out-expo),
+                  opacity 0.65s var(--ease-out-expo),
+                  filter 0.65s ease,
+                  border-color 0.45s ease,
+                  box-shadow 0.45s ease;
+      will-change: transform, opacity;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .review-slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at var(--rx, 50%) var(--ry, 50%),
+        rgba(231, 188, 134, 0.14) 0%,
+        transparent 62%
+      );
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+    }
+
+    .review-slide.is-active {
+      transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
+      opacity: 1;
+      z-index: 5;
+      filter: blur(0px);
+      border-color: rgba(231, 188, 134, 0.58);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.78), 0 0 34px rgba(231, 188, 134, 0.14);
+      cursor: default;
+    }
+
+    .review-slide.is-active:hover::before {
+      opacity: 1;
+    }
+
+    .review-slide.is-prev {
+      transform: translate3d(-66%, 12px, -170px) scale(0.84) rotateY(15deg);
+      opacity: 0.48;
+      z-index: 3;
+      filter: blur(1px);
+    }
+
+    .review-slide.is-next {
+      transform: translate3d(66%, 12px, -170px) scale(0.84) rotateY(-15deg);
+      opacity: 0.48;
+      z-index: 3;
+      filter: blur(1px);
+    }
+
+    .review-slide.is-prev:hover,
+    .review-slide.is-next:hover {
+      opacity: 0.76;
+      filter: blur(0px);
+      border-color: rgba(231, 188, 134, 0.44);
+    }
+
+    .review-slide.is-hidden-left {
+      transform: translate3d(-115%, 24px, -320px) scale(0.68) rotateY(24deg);
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .review-slide.is-hidden-right {
+      transform: translate3d(115%, 24px, -320px) scale(0.68) rotateY(-24deg);
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .review-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .review-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: #ffffff;
+      border: 1.5px solid rgba(231, 188, 134, 0.45);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+      flex-shrink: 0;
+    }
+
+    .review-author-name {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .review-author-badge {
+      font-size: 12px;
+      color: var(--gold);
+      opacity: 0.92;
+      margin-top: 2px;
+    }
+
+    .review-ym-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      font-size: 11.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .review-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .review-stars {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: #ffcc00;
+    }
+
+    .review-date {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .review-quote-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .review-quote-icon {
+      position: absolute;
+      right: 0;
+      bottom: -6px;
+      color: rgba(231, 188, 134, 0.12);
+      pointer-events: none;
+    }
+
+    .review-text {
+      font-size: 15px;
+      line-height: 1.62;
+      color: #f1efe9;
+      position: relative;
+      z-index: 1;
+    }
+
+    .reviews-controls {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .review-nav-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1px solid rgba(231, 188, 134, 0.36);
+      background: rgba(12, 22, 17, 0.9);
+      color: var(--gold-light);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+    }
+
+    .review-nav-btn:hover {
+      background: linear-gradient(135deg, #f5deb8 0%, #dfa462 100%);
+      color: #14100a;
+      border-color: transparent;
+      transform: scale(1.08);
+      box-shadow: 0 12px 26px rgba(223, 164, 98, 0.35);
+    }
+
+    .review-dots {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .review-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(231, 188, 134, 0.26);
+      cursor: pointer;
+      transition: all 0.35s var(--ease-out-expo);
+    }
+
+    .review-dot:hover {
+      background: rgba(231, 188, 134, 0.6);
+    }
+
+    .review-dot.is-active {
+      width: 30px;
+      background: linear-gradient(90deg, #f5deb8 0%, #dfa462 100%);
+      box-shadow: 0 0 12px rgba(231, 188, 134, 0.5);
+    }
+
+    @media (max-width: 860px) {
+      .reviews-stage {
+        height: 410px;
+      }
+      .review-slide {
+        padding: 24px 20px;
+      }
+      .review-slide.is-prev {
+        transform: translate3d(-14%, 14px, -160px) scale(0.88) rotateY(8deg);
+        opacity: 0.22;
+      }
+      .review-slide.is-next {
+        transform: translate3d(14%, 14px, -160px) scale(0.88) rotateY(-8deg);
+        opacity: 0.22;
+      }
+      .review-ym-tag {
+        display: none;
+      }
+    }
+
+    /* ================= БРОНИРОВАНИЕ ================= */
+    .booking-section {
+      position: relative;
+      min-height: 82vh;
+      display: flex;
+      align-items: center;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(16, 82, 54, 0.22) 0%, transparent 68%),
+        linear-gradient(180deg, #050807 0%, #08110d 50%, #050706 100%);
+      padding: 88px 0;
+      overflow: hidden;
+    }
+
+    .booking-banner {
+      width: 100%;
+      position: relative;
+      border-radius: 22px;
+      padding: 44px 48px;
+      background:
+        radial-gradient(circle at 86% 50%, rgba(20, 88, 58, 0.38) 0%, rgba(11, 21, 17, 0.95) 58%),
+        linear-gradient(135deg, #0e1814 0%, #080e0b 100%);
+      border: 1px solid rgba(231, 188, 134, 0.24);
+      display: grid;
+      grid-template-columns: 290px 1fr 140px;
+      align-items: center;
+      gap: 28px;
+      overflow: hidden;
+      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.55);
+      transition: border-color 0.35s ease;
+    }
+
+    .booking-banner:hover {
+      border-color: rgba(231, 188, 134, 0.45);
+    }
+
+    .booking-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.18;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .booking-sub {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .booking-form {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .select-box {
+      position: relative;
+      flex: 1;
+      min-width: 155px;
+    }
+
+    .select-box svg.field-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold);
+      pointer-events: none;
+    }
+
+    .select-box svg.chevron-icon {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .booking-control {
+      width: 100%;
+      height: 50px;
+      background: rgba(7, 12, 10, 0.85);
+      border: 1px solid rgba(231, 188, 134, 0.26);
+      border-radius: 999px;
+      padding: 0 38px 0 42px;
+      color: #f4f3ef;
+      font-size: 14px;
+      appearance: none;
+      cursor: pointer;
+      transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .booking-control:focus,
+    .booking-control:hover {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(14, 24, 19, 0.95);
+      box-shadow: 0 0 0 3px rgba(231, 188, 134, 0.12);
+    }
+
+    .booking-control option {
+      background: #101714;
+      color: #f4f3ef;
+    }
+
+    .booking-form .btn-gold {
+      height: 50px;
+      padding: 0 28px;
+    }
+
+    .eight-ball-track {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    .eight-ball {
+      width: 132px;
+      height: 132px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0.05) 18%, transparent 40%),
+        radial-gradient(circle at 65% 75%, #000000 0%, #161817 65%, #2b302d 100%);
+      box-shadow:
+        -12px 16px 28px rgba(0, 0, 0, 0.75),
+        inset -6px -8px 16px rgba(0, 0, 0, 0.9),
+        inset 3px 3px 10px rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      will-change: transform;
+      transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    .eight-ball-circle {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #dcd9d0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      color: #111111;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+      user-select: none;
+    }
+
+    /* ================= FOOTER ================= */
+    .footer {
+      position: relative;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(231, 188, 134, 0.09) 0%, transparent 55%),
+        linear-gradient(180deg, #080d0b 0%, #050706 100%);
+      padding: 64px 0 36px;
+      overflow: hidden;
+    }
+
+    .footer-top-glow {
+      position: absolute;
+      top: 0;
+      left: -35%;
+      width: 35%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold-light), var(--gold), transparent);
+      animation: footerBeam 6s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes footerBeam {
+      0% { left: -35%; }
+      100% { left: 110%; }
+    }
+
+    .footer-top-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.8fr 1.15fr auto;
+      gap: 40px;
+      align-items: start;
+      padding-bottom: 44px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .footer-brand-desc {
+      margin-top: 16px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      max-width: 300px;
+    }
+
+    .footer-col-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links-list a {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.25s ease, transform 0.25s var(--ease-out-expo);
+    }
+
+    .footer-links-list a:hover {
+      color: #ffffff;
+      transform: translateX(4px);
+    }
+
+    .footer-contact-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(14, 24, 19, 0.85);
+      border: 1px solid rgba(231, 188, 134, 0.16);
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: #e6e4dd;
+      cursor: pointer;
+      transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s var(--ease-out-expo);
+    }
+
+    .footer-contact-item:hover {
+      border-color: rgba(231, 188, 134, 0.48);
+      background: rgba(231, 188, 134, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .footer-contact-hint {
+      font-size: 11px;
+      color: var(--gold);
+      opacity: 0.9;
+    }
+
+    .scroll-top-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid rgba(231, 188, 134, 0.42);
+      background: rgba(14, 24, 19, 0.9);
+      color: var(--gold);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.35s var(--ease-out-expo);
+    }
+
+    .scroll-top-btn:hover {
+      background: linear-gradient(135deg, #f5deb8 0%, #dfa462 100%);
+      color: #14100a;
+      transform: translateY(-5px);
+      box-shadow: 0 12px 26px rgba(223, 164, 98, 0.35);
+    }
+
+    .footer-bottom-bar {
+      padding-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .socials {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .social-link {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(231, 188, 134, 0.24);
+      background: rgba(14, 24, 19, 0.85);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #e4e2db;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .social-link:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(231, 188, 134, 0.14);
+      transform: translateY(-3px) rotate(6deg);
+    }
+
+    .copyright {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* ================= SCROLL REVEAL ================= */
+    .reveal {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.85s var(--ease-out-expo),
+                  transform 0.85s var(--ease-out-expo);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.12s; }
+    .reveal-delay-2 { transition-delay: 0.24s; }
+    .reveal-delay-3 { transition-delay: 0.36s; }
+
+    /* ================= МОДАЛЬНОЕ ОКНО ================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 5, 0.82);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 440px;
+      background: linear-gradient(160deg, #111b16 0%, #090d0b 100%);
+      border: 1px solid rgba(231, 188, 134, 0.35);
+      border-radius: 20px;
+      padding: 32px;
+      position: relative;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.8);
+      transform: translateY(20px) scale(0.96);
+      transition: transform 0.35s var(--ease-out-expo);
+    }
+
+    .modal-backdrop.active .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      color: #ffffff;
+      border-color: var(--gold);
+      transform: rotate(90deg);
+    }
+
+    .modal-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+    }
+
+    .modal-field {
+      margin-bottom: 14px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .modal-input {
+      width: 100%;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 0 14px;
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .modal-submit {
+      width: 100%;
+      margin-top: 8px;
+      height: 48px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10241b;
+      border: 1px solid var(--gold);
+      color: #ffffff;
+      padding: 14px 22px;
+      border-radius: 14px;
+      font-size: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+      transform: translateY(130%);
+      opacity: 0;
+      transition: all 0.4s var(--ease-out-expo);
+      z-index: 200;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ================= ПАРАЛЛАКС-ШАРЫ ПО БОКАМ (ПК + МОБИЛЬНЫЙ) ================= */
+    .parallax-balls-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.55s ease;
+    }
+
+    .parallax-balls-layer.is-active {
+      opacity: 1;
+    }
+
+    .p-ball {
+      position: absolute;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      will-change: transform;
+      box-shadow:
+        -24px 32px 60px rgba(0, 0, 0, 0.9),
+        inset -16px -20px 38px rgba(0, 0, 0, 0.88),
+        inset 10px 10px 22px rgba(255, 255, 255, 0.22);
+    }
+
+    .p-ball::before {
+      content: '';
+      position: absolute;
+      top: 13%;
+      left: 19%;
+      width: 35%;
+      height: 22%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.58) 0%, transparent 76%);
+      transform: rotate(-28deg);
+      z-index: 3;
+    }
+
+    .p-ball-num {
+      position: relative;
+      z-index: 2;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #dcd6c8 100%);
+      color: #111111;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.32);
+    }
+
+    .p-ball--striped {
+      overflow: hidden;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cfc9bc 70%, #7c776d 100%);
+    }
+
+    .p-ball-stripe {
+      position: absolute;
+      left: -10%;
+      right: -10%;
+      height: 54%;
+      background: linear-gradient(180deg, #6d28d9 0%, #3b0764 100%);
+      z-index: 1;
+      box-shadow: inset 0 -10px 18px rgba(0, 0, 0, 0.55);
+    }
+
+    /* --- ПК ВЕРСИЯ (> 860px): меньше шаров (3 шт.), но они крупные (как на референсе) --- */
+    @media (min-width: 861px) {
+      .p-ball--mobile-only {
+        display: none;
+      }
+
+      .p-ball {
+        filter: blur(7px);
+        opacity: 0.68;
+      }
+
+      /* Крупный чёрный шар 8 слева (как на скриншоте) */
+      .p-ball--8 {
+        width: 280px;
+        height: 280px;
+        top: 18vh;
+        left: -125px;
+        background: radial-gradient(circle at 34% 28%, #343936 0%, #0d100f 62%, #000000 100%);
+      }
+      .p-ball--8 .p-ball-num {
+        width: 106px;
+        height: 106px;
+        font-size: 50px;
+      }
+
+      /* Крупный полосатый шар 12 справа */
+      .p-ball--12 {
+        width: 260px;
+        height: 260px;
+        top: 52vh;
+        right: -118px;
+      }
+      .p-ball--12 .p-ball-num {
+        width: 98px;
+        height: 98px;
+        font-size: 44px;
+      }
+
+      /* Крупный золотой шар 1 слева ниже */
+      .p-ball--1 {
+        width: 245px;
+        height: 245px;
+        top: 84vh;
+        left: -115px;
+        background: radial-gradient(circle at 35% 30%, #f7dfba 0%, #dfa462 60%, #7a4b18 100%);
+      }
+      .p-ball--1 .p-ball-num {
+        width: 92px;
+        height: 92px;
+        font-size: 42px;
+      }
+    }
+
+    /* --- МОБИЛЬНАЯ ВЕРСИЯ (<= 860px): компактные шары по бокам --- */
+    @media (max-width: 860px) {
+      .p-ball {
+        width: 150px;
+        height: 150px;
+        filter: blur(5px);
+        opacity: 0.72;
+      }
+
+      .p-ball-num {
+        width: 56px;
+        height: 56px;
+        font-size: 26px;
+      }
+
+      .p-ball--8 {
+        top: 14vh;
+        left: -76px;
+        background: radial-gradient(circle at 35% 30%, #2c302e 0%, #0a0c0b 65%, #000000 100%);
+      }
+
+      .p-ball--1 {
+        top: 36vh;
+        right: -82px;
+        width: 142px;
+        height: 142px;
+        background: radial-gradient(circle at 35% 30%, #f7dfba 0%, #dfa462 60%, #7a4b18 100%);
+      }
+
+      .p-ball--3 {
+        top: 56vh;
+        left: -82px;
+        width: 160px;
+        height: 160px;
+        background: radial-gradient(circle at 35% 30%, #b92b42 0%, #7a1c2b 60%, #360810 100%);
+      }
+
+      .p-ball--12 {
+        top: 74vh;
+        right: -74px;
+        width: 156px;
+        height: 156px;
+      }
+
+      .p-ball--6 {
+        top: 90vh;
+        left: -78px;
+        width: 146px;
+        height: 146px;
+        background: radial-gradient(circle at 35% 30%, #248f61 0%, #124932 60%, #061f14 100%);
+      }
+    }
+
+    /* ================= КАЧЕСТВЕННЫЙ АДАПТИВ ПОД ТЕЛЕФОН И ПЛАНШЕТ ================= */
+    @media (max-width: 1180px) {
+      .nav {
+        display: none;
+      }
+      .burger-btn {
+        display: inline-flex;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .directions-layout, .formats-grid, .about-grid, .footer-top-grid, .details-grid {
+        grid-template-columns: 1fr;
+      }
+      .directions-cards { grid-template-columns: repeat(2, 1fr); }
+      .highlights-strip { grid-template-columns: repeat(2, 1fr); }
+      .booking-banner { grid-template-columns: 1fr; padding: 32px; }
+      .eight-ball-track { display: none; }
+    }
+
+    @media (max-width: 860px) {
+      .container {
+        padding: 0 18px;
+      }
+
+      .section-block {
+        min-height: auto;
+        padding: 68px 0;
+      }
+
+      .header {
+        padding: 14px 0;
+      }
+      .header.is-scrolled {
+        padding: 10px 0;
+      }
+      .header-inner {
+        gap: 10px;
+      }
+      .logo {
+        gap: 10px;
+      }
+      .logo-emblem {
+        width: 36px;
+        height: 36px;
+      }
+      .logo-emblem svg {
+        width: 36px;
+        height: 36px;
+      }
+      .logo-title {
+        font-size: 17px;
+      }
+      .logo-sub {
+        font-size: 7.5px;
+        letter-spacing: 0.22em;
+      }
+      .header .btn-gold {
+        padding: 9px 14px;
+        font-size: 12px;
+        gap: 6px;
+      }
+      .header .btn-gold svg {
+        display: none;
+      }
+
+      .hero-wrapper {
+        min-height: 100svh;
+      }
+      .hero-content {
+        padding: 104px 0 42px;
+      }
+      .hero-kicker {
+        font-size: 20px;
+      }
+      .hero-title {
+        font-size: clamp(46px, 14vw, 68px);
+        margin-bottom: 12px;
+      }
+      .hero-subtitle {
+        font-size: 16px;
+        margin-bottom: 28px;
+      }
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+      }
+      .hero-actions .btn-gold {
+        width: 100%;
+        justify-content: center;
+      }
+      .hero-divider {
+        display: none;
+      }
+      .hero-video-btn {
+        justify-content: center;
+        padding: 8px 0;
+      }
+
+      .features-header {
+        margin-bottom: 34px;
+      }
+      .features-grid, .directions-cards, .events-grid, .highlights-strip {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .feature-item {
+        padding: 22px 20px;
+      }
+
+      .directions-info {
+        padding: 22px 20px;
+      }
+      .directions-info .btn-outline {
+        width: 100%;
+      }
+      .dir-card {
+        height: 250px;
+      }
+
+      .details-top {
+        margin-bottom: 20px;
+      }
+      .details-top .btn-outline {
+        width: 100%;
+      }
+      .details-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        margin-bottom: 20px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .details-filters::-webkit-scrollbar {
+        display: none;
+      }
+      .filter-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .detail-card {
+        padding: 20px 18px;
+      }
+      .detail-card-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+      .detail-pill {
+        font-size: 12.5px;
+        padding: 7px 11px;
+      }
+
+      /* Скрываем блок «Точность в каждой детали» (#formats) и разделитель сразу за ним на мобильной версии (max-width: 860px) */
+      #formats.section-block,
+      #formats.section-block + .section-divider {
+        display: none;
+      }
+
+      .about-photo {
+        height: 220px;
+      }
+      .coach-embedded-card {
+        grid-template-columns: 1fr;
+        padding: 16px;
+      }
+      .coach-card-img {
+        width: 100%;
+        height: 190px;
+      }
+      .about-content {
+        padding: 22px 18px;
+      }
+      .about-mini-features {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin: 22px 0 24px;
+      }
+      .mini-feat {
+        flex-direction: row;
+        align-items: center;
+      }
+      .mini-feat-label br {
+        display: none;
+      }
+      .about-content .btn-outline {
+        width: 100%;
+      }
+
+      .events-head .btn-gold {
+        width: 100%;
+      }
+      .event-card-body {
+        padding: 20px;
+      }
+
+      .booking-section {
+        min-height: auto;
+        padding: 64px 0;
+      }
+      .booking-banner {
+        padding: 26px 20px;
+        gap: 20px;
+      }
+      .booking-title {
+        font-size: 25px;
+      }
+      .booking-form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .booking-form .btn-gold {
+        width: 100%;
+      }
+
+      .footer {
+        padding: 48px 0 28px;
+      }
+      .footer-top-grid {
+        gap: 28px;
+        padding-bottom: 32px;
+      }
+      .footer-bottom-bar {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .modal-card {
+        padding: 24px 20px;
+      }
+      .toast {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .header .btn-gold {
+        padding: 8px 11px;
+        font-size: 11.5px;
+      }
+      .logo-sub {
+        display: none;
+      }
+    }
+
+    /* =========================================================
+       ДОПОЛНИТЕЛЬНАЯ МОБИЛЬНАЯ АДАПТАЦИЯ
+       ========================================================= */
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      scroll-padding-top: 84px;
+    }
+
+    body {
+      min-width: 320px;
+      overscroll-behavior-x: none;
+    }
+
+    img, video, canvas, svg {
+      max-width: 100%;
+    }
+
+    button, a, input, select, textarea {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media (max-width: 860px) {
+      .container {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .section-block {
+        padding-top: clamp(54px, 9vw, 76px);
+        padding-bottom: clamp(54px, 9vw, 76px);
+        scroll-margin-top: 72px;
+      }
+
+      .header {
+        padding-top: max(10px, env(safe-area-inset-top));
+      }
+
+      .header .container {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .header-inner {
+        min-width: 0;
+      }
+
+      .logo {
+        min-width: 0;
+        gap: 8px;
+      }
+
+      .logo-emblem,
+      .logo-emblem svg {
+        width: 34px;
+        height: 34px;
+      }
+
+      .logo-text {
+        min-width: 0;
+      }
+
+      .header-actions {
+        flex: 0 0 auto;
+        gap: 8px;
+      }
+
+      .header .btn-gold {
+        min-height: 42px;
+        padding: 9px 13px;
+        font-size: 11.5px;
+      }
+
+      .burger-btn {
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+      }
+
+      .mobile-drawer {
+        width: min(360px, 88vw);
+        padding-top: max(22px, env(safe-area-inset-top));
+        padding-bottom: max(24px, env(safe-area-inset-bottom));
+      }
+
+      .mobile-nav-list a,
+      .mobile-drawer-close,
+      .burger-btn,
+      .btn-gold,
+      .btn-outline,
+      .filter-btn,
+      .format-tab {
+        touch-action: manipulation;
+      }
+
+      .hero-wrapper {
+        min-height: 100vh;
+        min-height: 100svh;
+        min-height: 100dvh;
+        justify-content: center;
+      }
+
+      .hero-content {
+        width: 100%;
+        max-width: 680px;
+        padding-top: max(112px, calc(env(safe-area-inset-top) + 92px));
+        padding-bottom: max(48px, env(safe-area-inset-bottom));
+      }
+
+      .hero-kicker {
+        line-height: 1.25;
+      }
+
+      .hero-title {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+      }
+
+      .hero-subtitle {
+        max-width: 34ch;
+        line-height: 1.5;
+      }
+
+      .hero-actions {
+        width: 100%;
+      }
+
+      .hero-actions > * {
+        max-width: 100%;
+      }
+
+      .section-title {
+        font-size: clamp(26px, 6vw, 38px);
+        overflow-wrap: anywhere;
+      }
+
+      .features-header,
+      .events-head,
+      .details-top {
+        min-width: 0;
+      }
+
+      .features-grid,
+      .directions-cards,
+      .events-grid,
+      .highlights-strip,
+      .details-grid,
+      .formats-grid,
+      .about-grid {
+        min-width: 0;
+      }
+
+      .feature-item,
+      .directions-info,
+      .detail-card,
+      .format-panel,
+      .table-sim-card,
+      .about-content,
+      .coach-embedded-card,
+      .event-card,
+      .booking-banner {
+        min-width: 0;
+      }
+
+      .dir-card {
+        min-height: 230px;
+      }
+
+      .details-top {
+        align-items: flex-start;
+      }
+
+      .detail-card-head {
+        min-width: 0;
+      }
+
+      .detail-card-title,
+      .detail-card-tag {
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .detail-tags {
+        align-items: flex-start;
+      }
+
+      .detail-pill {
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .format-stats {
+        min-width: 0;
+      }
+
+      .stat-box {
+        min-width: 0;
+      }
+
+      .stat-lbl {
+        overflow-wrap: anywhere;
+      }
+
+      .table-canvas-wrap {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      #billiardCanvas {
+        width: 100%;
+        height: auto;
+      }
+
+      .coach-card-title,
+      .event-title,
+      .booking-title {
+        overflow-wrap: anywhere;
+      }
+
+      .about-photo {
+        height: clamp(190px, 54vw, 300px);
+      }
+
+      .coach-card-img {
+        height: clamp(180px, 52vw, 260px);
+      }
+
+      .event-card-media {
+        height: clamp(155px, 45vw, 230px);
+      }
+
+      .reviews-stage {
+        height: clamp(410px, 112vw, 470px);
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .review-slide {
+        width: min(560px, calc(100vw - 40px));
+        min-height: 0;
+        max-height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+
+      .review-slide.is-prev {
+        transform: translate3d(-10%, 12px, -100px) scale(.92) rotateY(4deg);
+      }
+
+      .review-slide.is-next {
+        transform: translate3d(10%, 12px, -100px) scale(.92) rotateY(-4deg);
+      }
+
+      .booking-section {
+        padding-top: 54px;
+        padding-bottom: 54px;
+      }
+
+      .booking-banner {
+        grid-template-columns: minmax(0, 1fr);
+        padding: clamp(22px, 5vw, 32px);
+        border-radius: 20px;
+      }
+
+      .booking-form {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .select-box {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .booking-control {
+        min-width: 0;
+        font-size: 16px;
+      }
+
+      .booking-form .btn-gold {
+        min-height: 48px;
+      }
+
+      .footer-top-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .footer-top-grid > * {
+        min-width: 0;
+      }
+
+      .footer-brand-desc {
+        max-width: 48ch;
+      }
+
+      .footer-contact-item {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .footer-bottom-bar {
+        width: 100%;
+      }
+
+      .copyright {
+        line-height: 1.55;
+      }
+
+      .modal-backdrop {
+        align-items: center;
+        padding: max(12px, env(safe-area-inset-top)) 14px
+                 max(12px, env(safe-area-inset-bottom));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .modal-card {
+        width: 100%;
+        max-width: 460px;
+        max-height: calc(100dvh - 28px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 28px 20px 22px;
+      }
+
+      .modal-title {
+        padding-right: 34px;
+        font-size: clamp(20px, 5vw, 24px);
+      }
+
+      .modal-input {
+        min-height: 46px;
+        font-size: 16px;
+      }
+
+      .modal-submit {
+        min-height: 48px;
+      }
+
+      .toast {
+        left: max(12px, env(safe-area-inset-left));
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        width: auto;
+        max-width: 520px;
+        margin: 0 auto;
+        line-height: 1.45;
+      }
+
+      .scroll-top-btn {
+        width: 46px;
+        height: 46px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .header .container {
+        padding-left: 13px;
+        padding-right: 13px;
+      }
+
+      .logo-emblem,
+      .logo-emblem svg {
+        width: 31px;
+        height: 31px;
+      }
+
+      .logo-title {
+        font-size: 15px;
+        letter-spacing: .12em;
+      }
+
+      .logo-sub {
+        font-size: 6.8px;
+        letter-spacing: .16em;
+      }
+
+      .header .btn-gold {
+        padding: 9px 11px;
+        font-size: 10.5px;
+      }
+
+      .hero-content {
+        padding-top: 112px;
+      }
+
+      .hero-kicker {
+        font-size: clamp(17px, 4.8vw, 21px);
+      }
+
+      .hero-title {
+        font-size: clamp(44px, 15vw, 66px);
+        letter-spacing: .005em;
+      }
+
+      .hero-subtitle {
+        font-size: clamp(14px, 4vw, 16px);
+      }
+
+      .btn-gold,
+      .btn-outline {
+        min-height: 46px;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.3;
+      }
+
+      .features-grid,
+      .directions-cards,
+      .events-grid,
+      .highlights-strip {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .dir-card {
+        height: clamp(220px, 62vw, 280px);
+        padding: 18px;
+      }
+
+      .highlight-chip {
+        padding: 15px 17px;
+      }
+
+      .detail-card {
+        padding: 19px 16px;
+      }
+
+      .format-panel {
+        padding: 18px 15px;
+      }
+
+      .format-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+      }
+
+      .stat-box {
+        padding: 9px 6px;
+      }
+
+      .stat-val {
+        font-size: clamp(12px, 3.6vw, 15px);
+        overflow-wrap: anywhere;
+      }
+
+      .stat-lbl {
+        font-size: 10px;
+        line-height: 1.3;
+      }
+
+      .table-sim-card {
+        padding: 11px;
+      }
+
+      .about-content {
+        padding: 20px 16px;
+      }
+
+      .coach-embedded-card {
+        gap: 14px;
+      }
+
+      .event-card-body {
+        padding: 18px 17px 20px;
+      }
+
+      .reviews-stage {
+        height: 440px;
+      }
+
+      .review-slide {
+        width: calc(100vw - 36px);
+        padding: 22px 18px;
+        gap: 14px;
+      }
+
+      .booking-banner {
+        padding: 22px 16px;
+      }
+
+      .booking-title {
+        font-size: clamp(22px, 6vw, 27px);
+      }
+
+      .footer {
+        padding-top: 42px;
+      }
+
+      .footer-top-grid {
+        gap: 24px;
+      }
+
+      .mobile-drawer {
+        width: min(340px, 90vw);
+      }
+    }
+
+    @media (max-width: 390px) {
+      .container {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+
+      .header .container {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .header-inner {
+        gap: 6px;
+      }
+
+      .logo {
+        gap: 6px;
+      }
+
+      .logo-emblem,
+      .logo-emblem svg {
+        width: 29px;
+        height: 29px;
+      }
+
+      .logo-title {
+        font-size: 14px;
+      }
+
+      .header-actions {
+        gap: 6px;
+      }
+
+      .header .btn-gold {
+        min-height: 40px;
+        padding: 8px 9px;
+        font-size: 9.5px;
+      }
+
+      .burger-btn {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+      }
+
+      .hero-title {
+        font-size: clamp(40px, 14.5vw, 56px);
+      }
+
+      .review-slide {
+        width: calc(100vw - 30px);
+        padding: 20px 16px;
+      }
+
+      .format-stats {
+        gap: 5px;
+      }
+    }
+
+    @media (max-width: 350px) {
+      .header .btn-gold {
+        max-width: 94px;
+        white-space: normal;
+        line-height: 1.15;
+        padding: 6px 7px;
+      }
+
+      .logo-sub {
+        display: none;
+      }
+
+      .hero-actions .btn-gold,
+      .hero-actions .btn-outline {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .format-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+    }
+
+    @media (max-height: 520px) and (orientation: landscape) {
+      .hero-wrapper {
+        min-height: 620px;
+        min-height: max(620px, 100svh);
+      }
+
+      .hero-content {
+        padding-top: 112px;
+        padding-bottom: 36px;
+      }
+
+      .hero-title {
+        font-size: clamp(42px, 8vw, 64px);
+      }
+
+      .mobile-drawer {
+        overflow-y: auto;
+      }
+
+      .modal-backdrop {
+        align-items: flex-start;
+      }
+
+      .modal-card {
+        margin-top: 8px;
+        max-height: calc(100svh - 16px);
+      }
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      .feature-item:hover,
+      .detail-card:hover,
+      .highlight-chip:hover,
+      .event-card:hover,
+      .coach-embedded-card:hover,
+      .mini-feat:hover {
+        transform: none;
+      }
+
+      .dir-card:hover .dir-card-bg,
+      .about-photo:hover img,
+      .event-card:hover .event-card-media img {
+        transform: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+    /* Скрываем кнопку бронирования в шапке только на мобильных устройствах */
+    @media (max-width: 860px) {
+      .header-actions > .btn-gold {
+        display: none;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="ambient-spotlight" id="spotlight"></div>
+  <div class="cue-cursor" id="cueCursor"></div>
+
+  <!-- ПАРАЛЛАКС-ШАРЫ ПО БОКАМ (ПК + МОБИЛЬНЫЙ) -->
+  <div class="parallax-balls-layer" id="parallaxBallsLayer" aria-hidden="true">
+    <!-- Шар 8 (слева вверху — ПК и мобильный) -->
+    <div class="p-ball p-ball--8" data-speed="0.22" data-rot="-0.12">
+      <div class="p-ball-num">8</div>
+    </div>
+
+    <!-- Шар 1 (справа на мобильном / слева ниже на ПК) -->
+    <div class="p-ball p-ball--1" data-speed="-0.18" data-rot="0.15">
+      <div class="p-ball-num">1</div>
+    </div>
+
+    <!-- Шар 3 (только мобильный) -->
+    <div class="p-ball p-ball--3 p-ball--mobile-only" data-speed="0.26" data-rot="0.14">
+      <div class="p-ball-num">3</div>
+    </div>
+
+    <!-- Шар 12 (справа полосатый — ПК и мобильный) -->
+    <div class="p-ball p-ball--12 p-ball--striped" data-speed="-0.22" data-rot="-0.15">
+      <div class="p-ball-stripe"></div>
+      <div class="p-ball-num">12</div>
+    </div>
+
+    <!-- Шар 6 (только мобильный) -->
+    <div class="p-ball p-ball--6 p-ball--mobile-only" data-speed="0.20" data-rot="-0.10">
+      <div class="p-ball-num">6</div>
+    </div>
+  </div>
+
+  <!-- МОБИЛЬНОЕ МЕНЮ ШАПКИ (ВЫЕЗЖАЕТ СПРАВА) -->
+  <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop"></div>
+  <aside class="mobile-drawer" id="mobileDrawer" aria-label="Мобильное меню">
+    <div>
+      <div class="mobile-drawer-head">
+        <span class="mobile-drawer-title">Меню клуба</span>
+        <button class="mobile-drawer-close" id="closeMobileDrawer" aria-label="Закрыть меню">&times;</button>
+      </div>
+
+      <nav class="mobile-nav-list">
+        <a href="#features" class="js-mobile-link">Преимущества <span>→</span></a>
+        <a href="#directions" class="js-mobile-link">Направления <span>→</span></a>
+        <a href="#details" class="js-mobile-link">Условия и цены <span>→</span></a>
+        <a href="#formats" class="js-mobile-link">Точность и кий <span>→</span></a>
+        <a href="#about" class="js-mobile-link">О клубе и тренер <span>→</span></a>
+        <a href="#events" class="js-mobile-link">Турниры <span>→</span></a>
+        <a href="#reviews" class="js-mobile-link">Отзывы <span>→</span></a>
+        <a href="#booking" class="js-mobile-link">Онлайн-бронь <span>→</span></a>
+      </nav>
+    </div>
+
+    <div class="mobile-drawer-footer">
+      <button class="btn-gold js-open-modal js-close-drawer-on-click" style="width: 100%;">
+        Забронировать стол
+      </button>
+      <div class="mobile-drawer-info">
+        ул. Сергея Акимова, 43<br>
+        Ежедневно с 12:00 до 02:00<br>
+        <a href="tel:+79290532701" style="color: var(--gold-light); font-weight: 600;">+7 (929) 053-27-01</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- HERO + HEADER (100VH) -->
+  <div class="hero-wrapper">
+    <div class="hero-bg-layer"></div>
+    <div class="hero-vignette"></div>
+
+    <header class="header" id="siteHeader">
+      <div class="container header-inner">
+        <a href="#" class="logo hover-target">
+          <span class="logo-emblem">
+            <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
+              <defs>
+                <linearGradient id="goldLogoGrad" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#F7DFBA"/>
+                  <stop offset="50%" stop-color="#E4B172"/>
+                  <stop offset="100%" stop-color="#B67C3D"/>
+                </linearGradient>
+              </defs>
+              <circle class="logo-ring-stroke" cx="24" cy="24" r="21" stroke="url(#goldLogoGrad)" stroke-width="1.2" stroke-opacity="0.65"/>
+              <path class="logo-tri-stroke" d="M24 10L37 32.5H11L24 10Z" stroke="url(#goldLogoGrad)" stroke-width="1.6" stroke-linejoin="round"/>
+              <circle class="logo-dot" style="animation-delay: 0.2s" cx="24" cy="17.5" r="2.1" fill="url(#goldLogoGrad)"/>
+              <circle class="logo-dot" style="animation-delay: 0.3s" cx="20.8" cy="23" r="2.1" fill="url(#goldLogoGrad)"/>
+              <circle class="logo-dot" style="animation-delay: 0.35s" cx="27.2" cy="23" r="2.1" fill="url(#goldLogoGrad)"/>
+              <circle class="logo-dot" style="animation-delay: 0.45s" cx="17.6" cy="28.5" r="2.1" fill="url(#goldLogoGrad)"/>
+              <circle class="logo-dot" style="animation-delay: 0.5s" cx="24" cy="28.5" r="2.1" fill="url(#goldLogoGrad)"/>
+              <circle class="logo-dot" style="animation-delay: 0.55s" cx="30.4" cy="28.5" r="2.1" fill="url(#goldLogoGrad)"/>
+            </svg>
+          </span>
+          <span class="logo-text">
+            <span class="logo-title">СВОЯК</span>
+            <span class="logo-divider-line"></span>
+            <span class="logo-sub">БИЛЬЯРДНЫЙ КЛУБ</span>
+          </span>
+        </a>
+
+        <nav class="nav">
+          <a href="#features" class="hover-target">Преимущества</a>
+          <a href="#directions" class="hover-target">Направления</a>
+          <a href="#details" class="hover-target">Условия и цены</a>
+          <a href="#formats" class="hover-target">Точность</a>
+          <a href="#about" class="hover-target">О клубе</a>
+          <a href="#events" class="hover-target">Турниры</a>
+          <a href="#reviews" class="hover-target">Отзывы</a>
+          <a href="#booking" class="hover-target">Бронь</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="btn-gold js-open-modal js-magnetic hover-target">
+            Забронировать стол
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- Кнопка 3 полосочки (гамбургер) -->
+          <button class="burger-btn" id="burgerBtn" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileDrawer">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-kicker hero-anim hero-anim-1">Бильярдный клуб</div>
+        <h1 class="hero-title hero-anim hero-anim-2">СВОЯК</h1>
+        <p class="hero-subtitle hero-anim hero-anim-3">Игра. Отдых. Развитие.</p>
+
+        <div class="hero-actions hero-anim hero-anim-4">
+          <button class="btn-gold js-open-modal js-magnetic hover-target">
+            Забронировать стол
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <span class="hero-divider"></span>
+
+          <a href="#about" class="hero-video-btn hover-target">
+            <span class="play-circle">
+              <svg width="11" height="12" viewBox="0 0 11 12" fill="none">
+                <path d="M2 1.5L9.5 6L2 10.5V1.5Z" stroke="#E7BC86" stroke-width="1.4" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            О клубе
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ПРЕИМУЩЕСТВА -->
+  <section class="features-bar section-block" id="features">
+    <div class="container">
+      <div class="features-header reveal">
+        <h2 class="section-title">Стандарты настоящего бильярда</h2>
+        <p class="section-desc" style="margin-bottom: 0;">
+          Выверенная геометрия столов, тихий вечерний свет и пространство, где каждая партия приносит удовольствие.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-item reveal">
+          <div class="feature-icon">
+            <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+              <path d="M10 7H26V14C26 18.4183 22.4183 22 18 22C13.5817 22 10 18.4183 10 14V7Z" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M18 22V28M12 28H24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="feature-text">Профессиональные столы</div>
+          <div class="feature-sub">Ровный раскат, качественное сукно и точная геометрия бортов.</div>
+        </div>
+
+        <div class="feature-item reveal reveal-delay-1">
+          <div class="feature-icon">
+            <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+              <circle cx="18" cy="18" r="11" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="18" cy="18" r="5" stroke="currentColor" stroke-width="1.6"/>
+            </svg>
+          </div>
+          <div class="feature-text">Индивидуальные тренировки</div>
+          <div class="feature-sub">Постановка удара, тактика игры и разбор ошибок с наставником.</div>
+        </div>
+
+        <div class="feature-item reveal reveal-delay-2">
+          <div class="feature-icon">
+            <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+              <path d="M11 8H25L30 15L18 29L6 15L11 8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="feature-text">Атмосферный клуб</div>
+          <div class="feature-sub">Камерная обстановка, глубокие тёмные оттенки и мягкая подсветка.</div>
+        </div>
+
+        <div class="feature-item reveal reveal-delay-3">
+          <div class="feature-icon">
+            <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+              <circle cx="14" cy="13" r="4" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M7 26C7 22.134 10.134 19 14 19C17.866 19 21 22.134 21 26" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="feature-text">Комфортная зона для игры</div>
+          <div class="feature-sub">Просторные дистанции между столами для дружеских встреч и отдыха.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- НАШИ НАПРАВЛЕНИЯ -->
+  <section class="directions-section section-block" id="directions">
+    <div class="container">
+      <div class="directions-layout">
+        <div class="directions-info reveal">
+          <div>
+            <h2 class="section-title">Наши<br>направления</h2>
+            <p class="section-desc">
+              Выберите свой формат игры и наслаждайтесь атмосферой нашего клуба
+            </p>
+            <a href="#booking" class="btn-outline hover-target">
+              Узнать больше
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="directions-cards">
+          <div class="dir-card js-open-modal js-tilt hover-target reveal" data-service="Американский пулл">
+            <div class="dir-card-bg dir-card-bg--pool" style="background-image: url('images/pool.jpg');"></div>
+            <div class="dir-card-glare"></div>
+            <div class="dir-card-footer">
+              <div class="dir-card-title">Американский<br>пулл</div>
+              <svg class="dir-card-arrow" width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="dir-card js-open-modal js-tilt hover-target reveal reveal-delay-1" data-service="Занятия с тренером">
+            <div class="dir-card-bg" style="background-image: url('images/coach.jpg');"></div>
+            <div class="dir-card-glare"></div>
+            <div class="dir-card-footer">
+              <div class="dir-card-title">Занятия<br>с тренером</div>
+              <svg class="dir-card-arrow" width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="dir-card js-open-modal js-tilt hover-target reveal reveal-delay-2" data-service="Русский бильярд">
+            <div class="dir-card-bg" style="background-image: url('images/russian-billiard.jpg');"></div>
+            <div class="dir-card-glare"></div>
+            <div class="dir-card-footer">
+              <div class="dir-card-title">Русский<br>бильярд</div>
+              <svg class="dir-card-arrow" width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="dir-card js-open-modal js-tilt hover-target reveal reveal-delay-3" data-service="Настольный теннис">
+            <div class="dir-card-bg" style="background-image: url('images/table-tennis.jpg');"></div>
+            <div class="dir-card-glare"></div>
+            <div class="dir-card-footer">
+              <div class="dir-card-title">Настольный<br>теннис</div>
+              <svg class="dir-card-arrow" width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ПРОЧЕЕ: СТОЛЫ, ЦЕНЫ, УСЛОВИЯ И ОПЛАТА -->
+  <section class="details-section section-block" id="details">
+    <div class="container">
+      <div class="details-top reveal">
+        <div>
+          <h2 class="section-title" style="margin-bottom: 10px;">Прочее: столы, цены и детали клуба</h2>
+          <p class="section-desc" style="margin-bottom: 0; max-width: 600px;">
+            Вся полезная информация о площадке, оснащении, кухне, событиях и способах оплаты в удобном формате.
+          </p>
+        </div>
+        <button class="btn-outline js-open-modal hover-target" data-service="Уточнить детали и цены">
+          Уточнить детали
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="highlights-strip reveal">
+        <div class="highlight-chip">
+          <div class="highlight-val">от 480 ₽/час</div>
+          <div class="highlight-lbl">Игра в бильярд · 1 посещение от 480 ₽</div>
+        </div>
+        <div class="highlight-chip">
+          <div class="highlight-val">6 + 4 + 2</div>
+          <div class="highlight-lbl">6 русский · 4 пул · 2 настольный теннис</div>
+        </div>
+        <div class="highlight-chip">
+          <div class="highlight-val">от 500 ₽</div>
+          <div class="highlight-lbl">Средний счёт · русская и фитнес-кухня</div>
+        </div>
+        <div class="highlight-chip">
+          <div class="highlight-val">Бесплатно</div>
+          <div class="highlight-lbl">Парковка для гостей · Wi-Fi и зарядка</div>
+        </div>
+      </div>
+
+      <div class="details-filters reveal" role="tablist" aria-label="Категории деталей клуба">
+        <button class="filter-btn is-active hover-target" data-filter="all">Все категории</button>
+        <button class="filter-btn hover-target" data-filter="comfort">Инфраструктура и комфорт</button>
+        <button class="filter-btn hover-target" data-filter="game">Игра и обучение</button>
+        <button class="filter-btn hover-target" data-filter="events">Атмосфера, кухня и события</button>
+        <button class="filter-btn hover-target" data-filter="payment">Цены и оплата</button>
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-card reveal" data-cat="comfort">
+          <div class="detail-card-head">
+            <h3 class="detail-card-title">Инфраструктура и комфорт</h3>
+            <span class="detail-card-tag">Удобства</span>
+          </div>
+          <div class="detail-tags">
+            <span class="detail-pill"><strong>Парковка:</strong> бесплатная</span>
+            <span class="detail-pill">Велопарковка</span>
+            <span class="detail-pill">Wi-Fi</span>
+            <span class="detail-pill">Приглушённый свет</span>
+            <span class="detail-pill">Зарядка для телефона</span>
+            <span class="detail-pill">Можно с ноутбуком</span>
+            <span class="detail-pill">Туалет</span>
+            <span class="detail-pill detail-pill--warn">Посещение с животными: запрещено с животными</span>
+          </div>
+        </div>
+
+        <div class="detail-card reveal reveal-delay-1" data-cat="game">
+          <div class="detail-card-head">
+            <h3 class="detail-card-title">Игра и обучение</h3>
+            <span class="detail-card-tag">Столы и школа</span>
+          </div>
+          <div class="detail-tags">
+            <span class="detail-pill"><strong>Столов для русского бильярда:</strong> 6</span>
+            <span class="detail-pill"><strong>Столов для пула:</strong> 4</span>
+            <span class="detail-pill"><strong>Столов для настольного тенниса:</strong> 2</span>
+            <span class="detail-pill"><strong>Покрытие бортов:</strong> синтетический ковёр</span>
+            <span class="detail-pill">Личный тренер</span>
+            <span class="detail-pill">Групповые занятия</span>
+            <span class="detail-pill"><strong>Школа бильярда:</strong> детская, взрослая</span>
+            <span class="detail-pill">Детский клуб</span>
+            <span class="detail-pill">Хранение аксессуаров клиента</span>
+            <span class="detail-pill">Пробковый сбор</span>
+            <span class="detail-pill">Настольные игры</span>
+            <span class="detail-pill">Проведение турниров</span>
+          </div>
+        </div>
+
+        <div class="detail-card reveal" data-cat="events">
+          <div class="detail-card-head">
+            <h3 class="detail-card-title">Атмосфера, кухня и события</h3>
+            <span class="detail-card-tag">Бар и праздники</span>
+          </div>
+          <div class="detail-tags">
+            <span class="detail-pill"><strong>Тип заведения:</strong> бар-клуб</span>
+            <span class="detail-pill"><strong>Особенности заведения:</strong> бильярд</span>
+            <span class="detail-pill"><strong>Кухня:</strong> русская</span>
+            <span class="detail-pill"><strong>Специальное меню:</strong> фитнес</span>
+            <span class="detail-pill">Чай</span>
+            <span class="detail-pill">Кофе</span>
+            <span class="detail-pill">Спортивные трансляции</span>
+            <span class="detail-pill"><strong>События:</strong> Корпоратив, День Рождения</span>
+            <span class="detail-pill">Подарочный сертификат</span>
+            <span class="detail-pill">Предварительная запись</span>
+            <span class="detail-pill"><strong>Акции:</strong> скидки, акции, спецпредложения, бонусы, подарки</span>
+          </div>
+        </div>
+
+        <div class="detail-card reveal reveal-delay-1" data-cat="payment">
+          <div class="detail-card-head">
+            <h3 class="detail-card-title">Цены и оплата</h3>
+            <span class="detail-card-tag">Тарифы и расчёт</span>
+          </div>
+          <div class="detail-tags">
+            <span class="detail-pill"><strong>Игра в бильярд (час):</strong> от 480 ₽</span>
+            <span class="detail-pill"><strong>1 посещение:</strong> от 480 ₽</span>
+            <span class="detail-pill"><strong>Средний счёт:</strong> от 500 ₽</span>
+            <span class="detail-pill">Наличными</span>
+            <span class="detail-pill">Оплата картой</span>
+            <span class="detail-pill">Онлайн</span>
+            <span class="detail-pill">QR-код</span>
+            <span class="detail-pill">СБП</span>
+            <span class="detail-pill">Безналичная</span>
+            <span class="detail-pill">Банковским переводом</span>
+            <span class="detail-pill">Оплата кредитной картой</span>
+            <span class="detail-pill">Оформление кредита</span>
+            <span class="detail-pill">Банковским чеком</span>
+            <span class="detail-pill">Бесконтактная оплата</span>
+            <span class="detail-pill">Дисконтная система скидок</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ТОЧНОСТЬ В КАЖДОЙ ДЕТАЛИ -->
+  <section class="formats-showcase section-block" id="formats">
+    <div class="container">
+      <div class="formats-grid">
+        <div class="reveal">
+          <h2 class="section-title">Точность в каждой детали</h2>
+          <p class="section-desc">
+            Выберите вид бильярда, проведите пальцем или курсором по столу для прицеливания — кий построит траекторию качения, а нажатие отправит шар в прокат.
+          </p>
+
+          <div class="format-tabs" role="tablist">
+            <button class="format-tab is-active hover-target" data-mode="russian">Русский бильярд</button>
+            <button class="format-tab hover-target" data-mode="pool">Американский пулл</button>
+            <button class="format-tab hover-target" data-mode="evening">Вечерний отдых</button>
+          </div>
+
+          <div class="format-panel">
+            <h3 class="format-panel-title" id="formatTitle">Русский бильярд — Пирамида</h3>
+            <p class="format-panel-text" id="formatDesc">
+              Белые шары в треугольнике и бордовый биток. Направьте кий, постройте траекторию и нажмите на стол для удара.
+            </p>
+            <div class="format-stats">
+              <div class="stat-box">
+                <div class="stat-val" id="stat1">6 столов</div>
+                <div class="stat-lbl">Русский бильярд</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val" id="stat2">от 480 ₽</div>
+                <div class="stat-lbl">Час игры</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val" id="stat3">6 луз</div>
+                <div class="stat-lbl">Геометрия</div>
+              </div>
+            </div>
+
+            <div class="power-bar-row">
+              <span>Сила удара:</span>
+              <input type="range" class="power-range hover-target" id="shotPower" min="25" max="100" value="75" />
+              <span id="powerValue" style="color: var(--gold); font-weight: 600;">75%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-sim-card reveal reveal-delay-1">
+          <div class="table-sim-top">
+            <span class="table-sim-badge" id="simModeBadge">РЕЖИМ: РУССКИЙ БИЛЬЯРД • НАЖАТИЕ ПО СТОЛУ — УДАР</span>
+            <button class="btn-outline hover-target" style="padding: 8px 16px; font-size: 12px;" id="resetBallsBtn">Сброс расстановки</button>
+          </div>
+
+          <div class="table-canvas-wrap" id="tableCanvasWrap">
+            <canvas id="billiardCanvas" width="660" height="350"></canvas>
+          </div>
+
+          <div class="table-sim-hint">
+            <span id="tableHintText">Двигайте курсор или палец для прицела и нажмите для удара</span>
+            <span class="potted-counter">Забито в серии: <span id="pottedCount">0</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- О КЛУБЕ + КАРТОЧКА «НАШ ТРЕНЕР» -->
+  <section class="about-section section-block" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-left-stack reveal">
+          <div class="about-photo">
+            <img src="images/foto-6-hall.jpg" alt="Игровые столы и вечерняя подсветка зала" />
+            <div class="event-meta about-photo-caption">Игровые столы и вечерняя подсветка зала</div>
+          </div>
+
+          <div class="coach-embedded-card">
+            <div class="coach-card-img">
+              <img src="images/coach.jpg" alt="Наш тренер по бильярду" />
+            </div>
+            <div>
+              <div class="coach-card-tag">Наставник клуба</div>
+              <h3 class="coach-card-title">Наш тренер</h3>
+              <p class="coach-card-desc">
+                Профессиональный тренер поможет освоить игру, улучшить технику, поставить удар и достичь новых результатов.
+              </p>
+              <button class="btn-outline js-open-modal hover-target" style="padding: 9px 18px; font-size: 12.5px;" data-service="Индивидуальная тренировка">
+                Подробнее о тренере
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="about-content reveal reveal-delay-1">
+          <h2 class="section-title">О клубе</h2>
+          <p class="section-desc" style="margin-bottom: 0;">
+            «Свояк» — современный бильярдный клуб для тех, кто ценит качество игры, атмосферу и возможность развиваться в любимом деле.
+          </p>
+
+          <div class="about-mini-features">
+            <div class="mini-feat">
+              <div class="mini-feat-icon">
+                <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                  <path d="M11 8H25L30 15L18 29L6 15L11 8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                  <path d="M6 15H30M18 29L13 15L18 8L23 15L18 29Z" stroke="currentColor" stroke-width="1.3"/>
+                </svg>
+              </div>
+              <div class="mini-feat-label">Современное<br>оборудование</div>
+            </div>
+
+            <div class="mini-feat">
+              <div class="mini-feat-icon">
+                <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                  <circle cx="14" cy="13" r="4" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="24" cy="14" r="3.2" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M7 26C7 22.134 10.134 19 14 19C17.866 19 21 22.134 21 26" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M21.5 19.5C24.5 19.5 28 21.5 28 25.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="mini-feat-label">Уютная<br>атмосфера</div>
+            </div>
+
+            <div class="mini-feat">
+              <div class="mini-feat-icon">
+                <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                  <path d="M18 31C18 31 27 22.5 27 15C27 10.0294 22.9706 6 18 6C13.0294 6 9 10.0294 9 15C9 22.5 18 31 18 31Z" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="18" cy="15" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+              </div>
+              <div class="mini-feat-label">Удобное<br>расположение</div>
+            </div>
+          </div>
+
+          <button class="btn-outline js-open-modal hover-target">
+            Узнать больше
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ТУРНИРЫ И КЛУБНАЯ ЖИЗНЬ -->
+  <section class="events-section section-block" id="events">
+    <div class="container">
+      <div class="events-head reveal">
+        <div>
+          <h2 class="section-title" style="margin-bottom: 10px;">Турниры и клубная жизнь</h2>
+          <p class="section-desc" style="margin-bottom: 0; max-width: 520px;">
+            Регулярные вечера для тех, кто любит азарт, сильных соперников и живое общение за сукном.
+          </p>
+        </div>
+        <button class="btn-gold js-open-modal js-magnetic hover-target" data-service="Участие в турнире">
+          Записаться на вечер
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="events-grid">
+        <div class="event-card reveal">
+          <div class="event-card-media">
+            <img src="images/russian-billiard.jpg" alt="01 / ТУРНИРЫ — Кубок Свояка" />
+          </div>
+          <div class="event-card-body">
+            <div class="event-num">01 / ТУРНИРЫ</div>
+            <h3 class="event-title">Кубок «Свояка»</h3>
+            <p class="event-desc">
+              Ежемесячные любительские и открытые турниры с сеткой плей-офф, призовым фондом и честным судейством.
+            </p>
+            <span class="event-meta">Каждую субботу</span>
+          </div>
+        </div>
+
+        <div class="event-card reveal reveal-delay-1">
+          <div class="event-card-media">
+            <img src="images/pool.jpg" alt="02 / ИГРОВЫЕ ВСТРЕЧИ — Игровые вечера" />
+          </div>
+          <div class="event-card-body">
+            <div class="event-num">02 / ИГРОВЫЕ ВСТРЕЧИ</div>
+            <h3 class="event-title">Игровые вечера</h3>
+            <p class="event-desc">
+              Формат быстрых партий со сменой соперников для практики, отработки нервов и новых знакомств в клубе.
+            </p>
+            <span class="event-meta">Вечерний формат</span>
+          </div>
+        </div>
+
+        <div class="event-card reveal reveal-delay-2">
+          <div class="event-card-media">
+            <img src="images/table-tennis.jpg" alt="Закрытые встречи в бильярдном клубе" />
+          </div>
+          <div class="event-card-body">
+            <div class="event-num">03 / СОБЫТИЯ</div>
+            <h3 class="event-title">Закрытые встречи</h3>
+            <p class="event-desc">
+              Аренда столов и зала для командных встреч, дней рождений и корпоративных вечеров в камерной атмосфере.
+            </p>
+            <span class="event-meta">По предзаказу</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ОТЗЫВЫ ИЗ ЯНДЕКС КАРТ -->
+  <section class="reviews-section section-block" id="reviews">
+    <div class="container">
+      <div class="reviews-head reveal">
+        <div>
+          <h2 class="section-title" style="margin-bottom: 10px;">Отзывы гостей клуба</h2>
+          <p class="section-desc" style="margin-bottom: 0; max-width: 540px;">
+            Реальные впечатления посетителей бильярдного клуба «Свояк» из Яндекс Карт.
+          </p>
+        </div>
+
+        <div class="yandex-rating-pill">
+          <div class="yandex-pin" aria-hidden="true">
+            <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+              <path d="M8 0.5C3.86 0.5 0.5 3.86 0.5 8C0.5 12.95 8 17.5 8 17.5C8 17.5 15.5 12.95 15.5 8C15.5 3.86 12.14 0.5 8 0.5ZM8 10.6C6.56 10.6 5.4 9.44 5.4 8C5.4 6.56 6.56 5.4 8 5.4C9.44 5.4 10.6 6.56 10.6 8C10.6 9.44 9.44 10.6 8 10.6Z" fill="#FFFFFF"/>
+            </svg>
+          </div>
+          <div class="yandex-rating-info">
+            <div class="yandex-rating-top">
+              <span>5,0</span>
+              <span class="yandex-stars-row" aria-label="5 из 5 звёзд">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+              </span>
+            </div>
+            <div class="yandex-rating-sub">Отзывы на Яндекс Картах</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reviews-carousel-wrapper reveal" id="reviewsCarousel">
+        <div class="reviews-stage" id="reviewsStage">
+
+          <!-- Отзыв 1 -->
+          <article class="review-slide is-active hover-target" data-index="0">
+            <div class="review-header">
+              <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #6d28d9, #3b0764);">YM</div>
+                <div>
+                  <div class="review-author-name">Yuriy Mikhaylovich</div>
+                  <div class="review-author-badge">Знаток города 10 уровня</div>
+                </div>
+              </div>
+              <span class="review-ym-tag">Яндекс Карты</span>
+            </div>
+            <div class="review-meta-row">
+              <div class="review-stars" aria-label="Оценка 5 из 5">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+              </div>
+              <span class="review-date">18 ноября</span>
+            </div>
+            <div class="review-quote-wrap">
+              <p class="review-text">
+                Душевное, спокойное место со своей ламповой атмосферой. Американка, русский, бонусом настольный теннис. Также спасибо владельцу клуба за небольшой экскурс по бильярдным столам и фото нашей большой компании. Рекомендую.
+              </p>
+              <svg class="review-quote-icon" width="54" height="42" viewBox="0 0 54 42" fill="currentColor">
+                <path d="M14.4 42C6.4 42 0 35.6 0 27.2C0 15.2 8.8 5.2 21.6 0L24.4 5.2C15.6 9.2 11.2 15.6 10.8 21.6C12 21.2 13.2 21 14.6 21C20.4 21 24.8 25.4 24.8 31.4C24.8 37.4 20.2 42 14.4 42ZM43.6 42C35.6 42 29.2 35.6 29.2 27.2C29.2 15.2 38 5.2 50.8 0L53.6 5.2C44.8 9.2 40.4 15.6 40 21.6C41.2 21.2 42.4 21 43.8 21C49.6 21 54 25.4 54 31.4C54 37.4 49.4 42 43.6 42Z"/>
+              </svg>
+            </div>
+          </article>
+
+          <!-- Отзыв 2 -->
+          <article class="review-slide is-next hover-target" data-index="1">
+            <div class="review-header">
+              <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #0f766e, #115e59);">АМ</div>
+                <div>
+                  <div class="review-author-name">Анастасия Маришенкова</div>
+                  <div class="review-author-badge">Знаток города 6 уровня</div>
+                </div>
+              </div>
+              <span class="review-ym-tag">Яндекс Карты</span>
+            </div>
+            <div class="review-meta-row">
+              <div class="review-stars" aria-label="Оценка 5 из 5">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+              </div>
+              <span class="review-date">13 ноября</span>
+            </div>
+            <div class="review-quote-wrap">
+              <p class="review-text">
+                Была там в первый раз, понравилось. Администратор супер. Будем ходить теперь чаще
+              </p>
+              <svg class="review-quote-icon" width="54" height="42" viewBox="0 0 54 42" fill="currentColor">
+                <path d="M14.4 42C6.4 42 0 35.6 0 27.2C0 15.2 8.8 5.2 21.6 0L24.4 5.2C15.6 9.2 11.2 15.6 10.8 21.6C12 21.2 13.2 21 14.6 21C20.4 21 24.8 25.4 24.8 31.4C24.8 37.4 20.2 42 14.4 42ZM43.6 42C35.6 42 29.2 35.6 29.2 27.2C29.2 15.2 38 5.2 50.8 0L53.6 5.2C44.8 9.2 40.4 15.6 40 21.6C41.2 21.2 42.4 21 43.8 21C49.6 21 54 25.4 54 31.4C54 37.4 49.4 42 43.6 42Z"/>
+              </svg>
+            </div>
+          </article>
+
+          <!-- Отзыв 3 -->
+          <article class="review-slide is-hidden-right hover-target" data-index="2">
+            <div class="review-header">
+              <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #9a3412, #431407);">Г</div>
+                <div>
+                  <div class="review-author-name">Герман</div>
+                  <div class="review-author-badge">Знаток города 5 уровня</div>
+                </div>
+              </div>
+              <span class="review-ym-tag">Яндекс Карты</span>
+            </div>
+            <div class="review-meta-row">
+              <div class="review-stars" aria-label="Оценка 5 из 5">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+              </div>
+              <span class="review-date">6 октября</span>
+            </div>
+            <div class="review-quote-wrap">
+              <p class="review-text">
+                Отличный бильярдный клуб, имеется большое количество столов, доступная цена
+              </p>
+              <svg class="review-quote-icon" width="54" height="42" viewBox="0 0 54 42" fill="currentColor">
+                <path d="M14.4 42C6.4 42 0 35.6 0 27.2C0 15.2 8.8 5.2 21.6 0L24.4 5.2C15.6 9.2 11.2 15.6 10.8 21.6C12 21.2 13.2 21 14.6 21C20.4 21 24.8 25.4 24.8 31.4C24.8 37.4 20.2 42 14.4 42ZM43.6 42C35.6 42 29.2 35.6 29.2 27.2C29.2 15.2 38 5.2 50.8 0L53.6 5.2C44.8 9.2 40.4 15.6 40 21.6C41.2 21.2 42.4 21 43.8 21C49.6 21 54 25.4 54 31.4C54 37.4 49.4 42 43.6 42Z"/>
+              </svg>
+            </div>
+          </article>
+
+          <!-- Отзыв 4 -->
+          <article class="review-slide is-hidden-right hover-target" data-index="3">
+            <div class="review-header">
+              <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #15803d, #14532d);">ИК</div>
+                <div>
+                  <div class="review-author-name">Иван Квавадзе</div>
+                  <div class="review-author-badge">Знаток города 5 уровня</div>
+                </div>
+              </div>
+              <span class="review-ym-tag">Яндекс Карты</span>
+            </div>
+            <div class="review-meta-row">
+              <div class="review-stars" aria-label="Оценка 5 из 5">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+              </div>
+              <span class="review-date">3 октября</span>
+            </div>
+            <div class="review-quote-wrap">
+              <p class="review-text">
+                Прекрасное место! Можно со своим только нужно договорится заранее!
+              </p>
+              <svg class="review-quote-icon" width="54" height="42" viewBox="0 0 54 42" fill="currentColor">
+                <path d="M14.4 42C6.4 42 0 35.6 0 27.2C0 15.2 8.8 5.2 21.6 0L24.4 5.2C15.6 9.2 11.2 15.6 10.8 21.6C12 21.2 13.2 21 14.6 21C20.4 21 24.8 25.4 24.8 31.4C24.8 37.4 20.2 42 14.4 42ZM43.6 42C35.6 42 29.2 35.6 29.2 27.2C29.2 15.2 38 5.2 50.8 0L53.6 5.2C44.8 9.2 40.4 15.6 40 21.6C41.2 21.2 42.4 21 43.8 21C49.6 21 54 25.4 54 31.4C54 37.4 49.4 42 43.6 42Z"/>
+              </svg>
+            </div>
+          </article>
+
+          <!-- Отзыв 5 -->
+          <article class="review-slide is-hidden-right hover-target" data-index="4">
+            <div class="review-header">
+              <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #b45309, #78350f);">ОБ</div>
+                <div>
+                  <div class="review-author-name">Ольга Бутяева</div>
+                  <div class="review-author-badge">Знаток города 8 уровня</div>
+                </div>
+              </div>
+              <span class="review-ym-tag">Яндекс Карты</span>
+            </div>
+            <div class="review-meta-row">
+              <div class="review-stars" aria-label="Оценка 5 из 5">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+              </div>
+              <span class="review-date">26 мая</span>
+            </div>
+            <div class="review-quote-wrap">
+              <p class="review-text">
+                Очень уютная атмосфера. Доброжелательный персонал. Действует система записи.
+              </p>
+              <svg class="review-quote-icon" width="54" height="42" viewBox="0 0 54 42" fill="currentColor">
+                <path d="M14.4 42C6.4 42 0 35.6 0 27.2C0 15.2 8.8 5.2 21.6 0L24.4 5.2C15.6 9.2 11.2 15.6 10.8 21.6C12 21.2 13.2 21 14.6 21C20.4 21 24.8 25.4 24.8 31.4C24.8 37.4 20.2 42 14.4 42ZM43.6 42C35.6 42 29.2 35.6 29.2 27.2C29.2 15.2 38 5.2 50.8 0L53.6 5.2C44.8 9.2 40.4 15.6 40 21.6C41.2 21.2 42.4 21 43.8 21C49.6 21 54 25.4 54 31.4C54 37.4 49.4 42 43.6 42Z"/>
+              </svg>
+            </div>
+          </article>
+
+          <!-- Отзыв 6 -->
+          <article class="review-slide is-prev hover-target" data-index="5">
+            <div class="review-header">
+              <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #be123c, #4c0519);">МД</div>
+                <div>
+                  <div class="review-author-name">Марина Домнина</div>
+                  <div class="review-author-badge">Знаток города 9 уровня</div>
+                </div>
+              </div>
+              <span class="review-ym-tag">Яндекс Карты</span>
+            </div>
+            <div class="review-meta-row">
+              <div class="review-stars" aria-label="Оценка 5 из 5">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.8-4.2 4.1 1 5.8L10 14.8l-5.3 2.7 1-5.8-4.2-4.1 5.9-.8L10 1.5z"/></svg>
+              </div>
+              <span class="review-date">9 мая</span>
+            </div>
+            <div class="review-quote-wrap">
+              <p class="review-text">
+                Нам нравится. Атмосфера очень простецкая, но мы с удовольствием ходим играть с настольный теннис)
+              </p>
+              <svg class="review-quote-icon" width="54" height="42" viewBox="0 0 54 42" fill="currentColor">
+                <path d="M14.4 42C6.4 42 0 35.6 0 27.2C0 15.2 8.8 5.2 21.6 0L24.4 5.2C15.6 9.2 11.2 15.6 10.8 21.6C12 21.2 13.2 21 14.6 21C20.4 21 24.8 25.4 24.8 31.4C24.8 37.4 20.2 42 14.4 42ZM43.6 42C35.6 42 29.2 35.6 29.2 27.2C29.2 15.2 38 5.2 50.8 0L53.6 5.2C44.8 9.2 40.4 15.6 40 21.6C41.2 21.2 42.4 21 43.8 21C49.6 21 54 25.4 54 31.4C54 37.4 49.4 42 43.6 42Z"/>
+              </svg>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="reviews-controls">
+          <button class="review-nav-btn hover-target" id="reviewsPrevBtn" aria-label="Предыдущий отзыв">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M11.5 4L6.5 9L11.5 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="review-dots" id="reviewsDots" role="tablist" aria-label="Навигация по отзывам">
+            <button class="review-dot is-active hover-target" data-slide="0" aria-label="Отзыв 1"></button>
+            <button class="review-dot hover-target" data-slide="1" aria-label="Отзыв 2"></button>
+            <button class="review-dot hover-target" data-slide="2" aria-label="Отзыв 3"></button>
+            <button class="review-dot hover-target" data-slide="3" aria-label="Отзыв 4"></button>
+            <button class="review-dot hover-target" data-slide="4" aria-label="Отзыв 5"></button>
+            <button class="review-dot hover-target" data-slide="5" aria-label="Отзыв 6"></button>
+          </div>
+
+          <button class="review-nav-btn hover-target" id="reviewsNextBtn" aria-label="Следующий отзыв">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M6.5 4L11.5 9L6.5 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- БЛОК БРОНИРОВАНИЯ -->
+  <section class="booking-section" id="booking">
+    <div class="container">
+      <div class="booking-banner reveal">
+        <div>
+          <h2 class="booking-title">Забронируйте<br>стол онлайн</h2>
+          <p class="booking-sub">
+            Выберите дату, время и наслаждайтесь игрой в нашем клубе
+          </p>
+        </div>
+
+        <form class="booking-form" id="quickBookingForm">
+          <div class="select-box hover-target">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M5 1.5V4M11 1.5V4M2 6.5H14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <select class="booking-control" id="bookingDate" required>
+              <option value="" disabled selected>Дата</option>
+              <option value="Сегодня">Сегодня</option>
+              <option value="Завтра">Завтра</option>
+              <option value="Послезавтра">Послезавтра</option>
+              <option value="В выходные">Ближайшие выходные</option>
+            </select>
+            <svg class="chevron-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <div class="select-box hover-target">
+            <svg class="field-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M8 4.8V8L10.2 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <select class="booking-control" id="bookingTime" required>
+              <option value="" disabled selected>Время</option>
+              <option value="14:00">14:00</option>
+              <option value="16:00">16:00</option>
+              <option value="18:00">18:00</option>
+              <option value="20:00">20:00</option>
+              <option value="22:00">22:00</option>
+            </select>
+            <svg class="chevron-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <button type="submit" class="btn-gold js-magnetic hover-target">
+            Забронировать
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="eight-ball-track hover-target" id="eightBallTrack" title="Нажмите, чтобы перекатить шар">
+          <div class="eight-ball" id="rollingEightBall">
+            <div class="eight-ball-circle">8</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ПРОРАБОТАННЫЙ FOOTER С АНИМАЦИЯМИ -->
+  <footer class="footer" id="footer">
+    <div class="footer-top-glow"></div>
+    <div class="container">
+      <div class="footer-top-grid">
+        <div>
+          <a href="#" class="logo hover-target">
+            <span class="logo-emblem" style="width: 40px; height: 40px;">
+              <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="21" stroke="#E7BC86" stroke-width="1.2" stroke-opacity="0.65"/>
+                <path d="M24 10L37 32.5H11L24 10Z" stroke="#E7BC86" stroke-width="1.6" stroke-linejoin="round"/>
+                <circle cx="24" cy="17.5" r="2.1" fill="#E7BC86"/>
+                <circle cx="20.8" cy="23" r="2.1" fill="#E7BC86"/>
+                <circle cx="27.2" cy="23" r="2.1" fill="#E7BC86"/>
+                <circle cx="17.6" cy="28.5" r="2.1" fill="#E7BC86"/>
+                <circle cx="24" cy="28.5" r="2.1" fill="#E7BC86"/>
+                <circle cx="30.4" cy="28.5" r="2.1" fill="#E7BC86"/>
+              </svg>
+            </span>
+            <span class="logo-text">
+              <span class="logo-title" style="font-size: 19px;">СВОЯК</span>
+              <span class="logo-divider-line"></span>
+              <span class="logo-sub">БИЛЬЯРДНЫЙ КЛУБ</span>
+            </span>
+          </a>
+          <p class="footer-brand-desc">
+            Пространство точной игры и камерных вечеров в Нижнем Новгороде. Работаем ежедневно с 12:00 до 02:00.
+          </p>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Навигация</div>
+          <ul class="footer-links-list">
+            <li><a href="#features" class="hover-target">Преимущества</a></li>
+            <li><a href="#directions" class="hover-target">Направления</a></li>
+            <li><a href="#details" class="hover-target">Условия и цены</a></li>
+            <li><a href="#formats" class="hover-target">Точность и кий</a></li>
+            <li><a href="#about" class="hover-target">О клубе и тренер</a></li>
+            <li><a href="#events" class="hover-target">Турниры</a></li>
+            <li><a href="#reviews" class="hover-target">Отзывы</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Контакты клуба</div>
+          <div class="footer-contact-item hover-target js-copy" data-copy="+7 (929) 053-27-01">
+            <span>+7 (929) 053-27-01</span>
+            <span class="footer-contact-hint">Копировать</span>
+          </div>
+          <div class="footer-contact-item hover-target js-copy" data-copy="ул. Сергея Акимова, 43.">
+            <span>ул. Сергея Акимова, 43.</span>
+            <span class="footer-contact-hint">Адрес</span>
+          </div>
+          <div class="footer-contact-item hover-target js-copy" data-copy="hello@svoyak-club.ru">
+            <span>hello@svoyak-club.ru</span>
+            <span class="footer-contact-hint">E-mail</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Наверх</div>
+          <button class="scroll-top-btn hover-target" id="scrollTopBtn" aria-label="Наверх" title="Наверх">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 14V4M9 4L4.5 8.5M9 4L13.5 8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <div class="copyright">© 2026 Бильярдный клуб «Свояк». Все права защищены.</div>
+
+        <div class="socials">
+          <a href="#" class="social-link hover-target" aria-label="Telegram">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21.9 4.6c.3-1.2-.8-2.2-1.9-1.7L2.8 10.1c-1.2.5-1.1 2.2.1 2.6l4.4 1.4 1.7 5.3c.3 1 1.6 1.3 2.4.6l2.5-2.3 4.8 3.5c.9.7 2.2.2 2.5-.9l3.7-15.7zM8.6 13.4l9.7-6.1-7.8 7.3-.3 3.2-1.6-4.4z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link hover-target" aria-label="VK">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13.16 18.99c-6.08 0-9.55-4.17-9.69-11.1h3.05c.1 5.09 2.34 7.24 4.12 7.69V7.89h2.87v4.39c1.76-.19 3.6-2.19 4.22-4.39h2.87c-.48 2.71-2.48 4.71-3.91 5.54 1.43.67 3.71 2.41 4.58 5.56h-3.16c-.68-2.11-2.37-3.74-4.61-3.97v3.97h-.34z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link hover-target" aria-label="Instagram">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- МОДАЛЬНОЕ ОКНО -->
+  <div class="modal-backdrop" id="bookingModal">
+    <div class="modal-card">
+      <button class="modal-close hover-target" id="closeModal" aria-label="Закрыть">&times;</button>
+      <h3 class="modal-title">Бронирование стола</h3>
+      <p class="modal-desc" id="modalSubtitle">Оставьте контакты, и администратор закрепит за вами лучший стол.</p>
+
+      <form id="modalForm">
+        <div class="modal-field">
+          <label for="clientName">Ваше имя</label>
+          <input class="modal-input" type="text" id="clientName" placeholder="Александр" required />
+        </div>
+        <div class="modal-field">
+          <label for="clientPhone">Телефон</label>
+          <input class="modal-input" type="tel" id="clientPhone" placeholder="+7 (999) 000-00-00" required />
+        </div>
+        <div class="modal-field">
+          <label for="clientGame">Формат / Стол</label>
+          <select class="modal-input" id="clientGame">
+            <option value="Русский бильярд">Русский бильярд</option>
+            <option value="Американский пулл">Американский пулл</option>
+            <option value="Настольный теннис">Настольный теннис</option>
+            <option value="Занятия с тренером">Занятия с тренером</option>
+            <option value="Участие в турнире">Участие в турнире</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-gold modal-submit hover-target">
+          Подтвердить бронь
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- УВЕДОМЛЕНИЕ -->
+  <div class="toast" id="toast">Заявка принята! Ждём вас в клубе «СВОЯК».</div>
+
+  <script>
+    const spotlight = document.getElementById('spotlight');
+    const cueCursor = document.getElementById('cueCursor');
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let cursorX = mouseX;
+    let cursorY = mouseY;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      spotlight.style.setProperty('--mx', `${mouseX}px`);
+      spotlight.style.setProperty('--my', `${mouseY}px`);
+    });
+
+    function animateCursor() {
+      cursorX += (mouseX - cursorX) * 0.18;
+      cursorY += (mouseY - cursorY) * 0.18;
+      cueCursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    document.querySelectorAll('.hover-target').forEach(el => {
+      el.addEventListener('mouseenter', () => cueCursor.classList.add('is-hover'));
+      el.addEventListener('mouseleave', () => cueCursor.classList.remove('is-hover'));
+    });
+
+    const siteHeader = document.getElementById('siteHeader');
+    window.addEventListener('scroll', () => {
+      siteHeader.classList.toggle('is-scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // ================= МОБИЛЬНОЕ МЕНЮ (3 ПОЛОСОЧКИ) =================
+    const burgerBtn = document.getElementById('burgerBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileDrawerBackdrop = document.getElementById('mobileDrawerBackdrop');
+    const closeMobileDrawerBtn = document.getElementById('closeMobileDrawer');
+
+    function openMobileMenu() {
+      burgerBtn?.classList.add('is-open');
+      burgerBtn?.setAttribute('aria-expanded', 'true');
+      mobileDrawer?.classList.add('is-open');
+      mobileDrawerBackdrop?.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileMenu() {
+      burgerBtn?.classList.remove('is-open');
+      burgerBtn?.setAttribute('aria-expanded', 'false');
+      mobileDrawer?.classList.remove('is-open');
+      mobileDrawerBackdrop?.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    burgerBtn?.addEventListener('click', () => {
+      if (mobileDrawer?.classList.contains('is-open')) {
+        closeMobileMenu();
+      } else {
+        openMobileMenu();
+      }
+    });
+
+    closeMobileDrawerBtn?.addEventListener('click', closeMobileMenu);
+    mobileDrawerBackdrop?.addEventListener('click', closeMobileMenu);
+
+    document.querySelectorAll('.js-mobile-link, .js-close-drawer-on-click').forEach(link => {
+      link.addEventListener('click', closeMobileMenu);
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1180) {
+        closeMobileMenu();
+      }
+    }, { passive: true });
+
+    document.querySelectorAll('.js-magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        if (window.innerWidth <= 860) return;
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate3d(${x * 0.22}px, ${y * 0.26}px, 0)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translate3d(0, 0, 0)';
+      });
+    });
+
+    document.querySelectorAll('.js-tilt').forEach(card => {
+      const glare = card.querySelector('.dir-card-glare');
+      card.addEventListener('mousemove', (e) => {
+        if (window.innerWidth <= 860) return;
+        const rect = card.getBoundingClientRect();
+        const relX = (e.clientX - rect.left) / rect.width;
+        const relY = (e.clientY - rect.top) / rect.height;
+        const rotateY = (relX - 0.5) * 14;
+        const rotateX = (0.5 - relY) * 14;
+
+        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+        if (glare) {
+          glare.style.setProperty('--gx', `${relX * 100}%`);
+          glare.style.setProperty('--gy', `${relY * 100}%`);
+        }
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'rotateX(0deg) rotateY(0deg) translateY(0)';
+      });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.14 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ================= ФИЛЬТР КАРТОЧЕК «ПРОЧЕЕ» =================
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const detailCards = document.querySelectorAll('.detail-card');
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        const filter = btn.dataset.filter;
+
+        detailCards.forEach(card => {
+          const match = filter === 'all' || card.dataset.cat === filter;
+          card.classList.toggle('is-hidden', !match);
+          if (match) card.classList.add('is-visible');
+        });
+      });
+    });
+
+    // ================= ИНТЕРАКТИВНЫЙ КИЙ И ПРОКАТ ШАРОВ (ПК + ТЕЛЕФОН) =================
+    const canvas = document.getElementById('billiardCanvas');
+    const ctx = canvas.getContext('2d');
+    const tableWrap = document.getElementById('tableCanvasWrap');
+    const powerSlider = document.getElementById('shotPower');
+    const powerValue = document.getElementById('powerValue');
+    const pottedCountEl = document.getElementById('pottedCount');
+
+    const MODES = {
+      russian: {
+        title: 'Русский бильярд — Пирамида',
+        desc: 'Белые шары в треугольнике и бордовый биток. Направьте кий, постройте траекторию и нажмите на стол для удара.',
+        s1: '6 столов',
+        s2: 'от 480 ₽',
+        s3: '6 луз',
+        badge: 'РЕЖИМ: РУССКИЙ БИЛЬЯРД • НАЖАТИЕ ПО СТОЛУ — УДАР',
+        ballRadius: 13,
+        pocketRadius: 21,
+        clothTop: '#124932',
+        clothBot: '#09261a',
+        friction: 0.986,
+        whitePyramid: true
+      },
+      pool: {
+        title: 'Американский пулл — Восьмёрка',
+        desc: 'Цветные шары в пирамиде и белый биток. Подберите угол прицеливания и нажмите на стол для удара.',
+        s1: '4 стола',
+        s2: 'от 480 ₽',
+        s3: '6 луз',
+        badge: 'РЕЖИМ: АМЕРИКАНСКИЙ ПУЛЛ • НАЖАТИЕ ПО СТОЛУ — УДАР',
+        ballRadius: 11,
+        pocketRadius: 23,
+        clothTop: '#15543a',
+        clothBot: '#0b2d1f',
+        friction: 0.985,
+        whitePyramid: false
+      },
+      evening: {
+        title: 'Вечерний отдых — Точный удар',
+        desc: 'Белые шары в треугольнике и бордовый биток в спокойной вечерней атмосфере. Наведите кий и нажмите на стол.',
+        s1: 'от 500 ₽',
+        s2: 'Бар-клуб',
+        s3: '6 луз',
+        badge: 'РЕЖИМ: ВЕЧЕРНИЙ ОТДЫХ • НАЖАТИЕ ПО СТОЛУ — УДАР',
+        ballRadius: 12,
+        pocketRadius: 22,
+        clothTop: '#0f412c',
+        clothBot: '#071f15',
+        friction: 0.987,
+        whitePyramid: true
+      }
+    };
+
+    let currentModeKey = 'russian';
+    let balls = [];
+    let pockets = [];
+    let aimAngle = -0.32;
+    let isStriking = false;
+    let cuePullback = 0;
+    let pottedCount = 0;
+    let sparks = [];
+
+    const TABLE = {
+      x: 24,
+      y: 24,
+      w: canvas.width - 48,
+      h: canvas.height - 48
+    };
+
+    function buildPockets(r) {
+      const { x, y, w, h } = TABLE;
+      pockets = [
+        { x: x + 6, y: y + 6, r },
+        { x: x + w / 2, y: y + 3, r: r * 0.94 },
+        { x: x + w - 6, y: y + 6, r },
+        { x: x + 6, y: y + h - 6, r },
+        { x: x + w / 2, y: y + h - 3, r: r * 0.94 },
+        { x: x + w - 6, y: y + h - 6, r }
+      ];
+    }
+
+    function initBalls(modeKey = currentModeKey) {
+      currentModeKey = modeKey;
+      const cfg = MODES[modeKey];
+      const r = cfg.ballRadius;
+      buildPockets(cfg.pocketRadius);
+
+      const cx = TABLE.x + TABLE.w * 0.64;
+      const cy = TABLE.y + TABLE.h * 0.5;
+      const dx = r * 1.92;
+      const dy = r * 1.06;
+
+      const cueColor = cfg.whitePyramid ? '#7a1c2b' : '#f6f4ed';
+      const colors = ['#e7bc86', '#d96b43', '#3b82f6', '#eab308', '#a855f7', '#10b981'];
+
+      balls = [
+        {
+          x: TABLE.x + TABLE.w * 0.24,
+          y: TABLE.y + TABLE.h * 0.52,
+          vx: 0,
+          vy: 0,
+          r,
+          isCue: true,
+          color: cueColor,
+          label: '',
+          potted: false,
+          rot: 0
+        }
+      ];
+
+      let idx = 0;
+      for (let col = 0; col < 3; col++) {
+        for (let row = 0; row <= col; row++) {
+          const bx = cx + col * dx;
+          const by = cy + (row - col / 2) * dy * 2;
+          balls.push({
+            x: bx,
+            y: by,
+            vx: 0,
+            vy: 0,
+            r,
+            isCue: false,
+            color: cfg.whitePyramid ? '#f6f4ed' : colors[idx % colors.length],
+            label: cfg.whitePyramid ? '' : String(idx + 1),
+            potted: false,
+            rot: 0
+          });
+          idx++;
+        }
+      }
+    }
+
+    function getCueBall() {
+      return balls.find(b => b.isCue);
+    }
+
+    function anyBallMoving() {
+      return balls.some(b => !b.potted && (Math.hypot(b.vx, b.vy) > 0.12));
+    }
+
+    function computeAimPreview() {
+      const cue = getCueBall();
+      if (!cue || cue.potted) return null;
+
+      const dirX = Math.cos(aimAngle);
+      const dirY = Math.sin(aimAngle);
+      const maxDist = 520;
+      const step = 3;
+
+      let hitBall = null;
+      let hitPoint = null;
+      let travel = 0;
+
+      for (let d = 0; d < maxDist; d += step) {
+        const px = cue.x + dirX * d;
+        const py = cue.y + dirY * d;
+
+        if (px - cue.r < TABLE.x || px + cue.r > TABLE.x + TABLE.w ||
+            py - cue.r < TABLE.y || py + cue.r > TABLE.y + TABLE.h) {
+          travel = d;
+          hitPoint = { x: px, y: py };
+          break;
+        }
+
+        for (const b of balls) {
+          if (b.isCue || b.potted) continue;
+          const dist = Math.hypot(px - b.x, py - b.y);
+          if (dist <= cue.r + b.r) {
+            travel = d;
+            hitBall = b;
+            hitPoint = { x: px, y: py };
+            break;
+          }
+        }
+        if (hitBall) break;
+        travel = d;
+      }
+
+      const endPoint = hitPoint || {
+        x: cue.x + dirX * travel,
+        y: cue.y + dirY * travel
+      };
+
+      let targetDir = null;
+      let highlightedPocket = null;
+
+      if (hitBall) {
+        const nx = (hitBall.x - endPoint.x) / (Math.hypot(hitBall.x - endPoint.x, hitBall.y - endPoint.y) || 1);
+        const ny = (hitBall.y - endPoint.y) / (Math.hypot(hitBall.x - endPoint.x, hitBall.y - endPoint.y) || 1);
+        targetDir = { x: nx, y: ny, originX: hitBall.x, originY: hitBall.y };
+
+        for (const p of pockets) {
+          const toPocketX = p.x - hitBall.x;
+          const toPocketY = p.y - hitBall.y;
+          const len = Math.hypot(toPocketX, toPocketY) || 1;
+          const dot = (toPocketX / len) * nx + (toPocketY / len) * ny;
+          if (dot > 0.965 && len < 340) {
+            highlightedPocket = p;
+            break;
+          }
+        }
+      }
+
+      return { start: { x: cue.x, y: cue.y }, end: endPoint, hitBall, targetDir, highlightedPocket };
+    }
+
+    function strikeCueBall() {
+      const cue = getCueBall();
+      if (!cue || cue.potted || anyBallMoving() || isStriking) return;
+
+      isStriking = true;
+      cuePullback = 22;
+
+      const power = Number(powerSlider.value) / 100;
+      const speed = 6.5 + power * 13.5;
+
+      setTimeout(() => {
+        cuePullback = -10;
+        cue.vx = Math.cos(aimAngle) * speed;
+        cue.vy = Math.sin(aimAngle) * speed;
+        setTimeout(() => {
+          cuePullback = 0;
+          isStriking = false;
+        }, 140);
+      }, 170);
+    }
+
+    function spawnSparks(x, y) {
+      for (let i = 0; i < 14; i++) {
+        const a = (Math.PI * 2 * i) / 14 + Math.random() * 0.3;
+        const sp = 1.5 + Math.random() * 3.5;
+        sparks.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, alpha: 1 });
+      }
+    }
+
+    function updatePhysics() {
+      const cfg = MODES[currentModeKey];
+
+      for (const b of balls) {
+        if (b.potted) continue;
+        b.x += b.vx;
+        b.y += b.vy;
+        b.vx *= cfg.friction;
+        b.vy *= cfg.friction;
+
+        const speed = Math.hypot(b.vx, b.vy);
+        b.rot += (speed / b.r) * 0.18;
+
+        if (speed < 0.08) {
+          b.vx = 0;
+          b.vy = 0;
+        }
+
+        if (b.x - b.r < TABLE.x) {
+          b.x = TABLE.x + b.r;
+          b.vx = Math.abs(b.vx) * 0.86;
+        } else if (b.x + b.r > TABLE.x + TABLE.w) {
+          b.x = TABLE.x + TABLE.w - b.r;
+          b.vx = -Math.abs(b.vx) * 0.86;
+        }
+
+        if (b.y - b.r < TABLE.y) {
+          b.y = TABLE.y + b.r;
+          b.vy = Math.abs(b.vy) * 0.86;
+        } else if (b.y + b.r > TABLE.y + TABLE.h) {
+          b.y = TABLE.y + TABLE.h - b.r;
+          b.vy = -Math.abs(b.vy) * 0.86;
+        }
+
+        for (const p of pockets) {
+          if (Math.hypot(b.x - p.x, b.y - p.y) < p.r * 0.85) {
+            spawnSparks(p.x, p.y);
+            if (b.isCue) {
+              b.x = TABLE.x + TABLE.w * 0.24;
+              b.y = TABLE.y + TABLE.h * 0.52;
+              b.vx = 0;
+              b.vy = 0;
+            } else {
+              b.potted = true;
+              b.vx = 0;
+              b.vy = 0;
+              pottedCount += 1;
+              pottedCountEl.textContent = pottedCount;
+            }
+          }
+        }
+      }
+
+      for (let i = 0; i < balls.length; i++) {
+        for (let j = i + 1; j < balls.length; j++) {
+          const a = balls[i];
+          const b = balls[j];
+          if (a.potted || b.potted) continue;
+
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy);
+          const minDist = a.r + b.r;
+
+          if (dist > 0 && dist < minDist) {
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const overlap = (minDist - dist) / 2;
+
+            a.x -= nx * overlap;
+            a.y -= ny * overlap;
+            b.x += nx * overlap;
+            b.y += ny * overlap;
+
+            const dvx = b.vx - a.vx;
+            const dvy = b.vy - a.vy;
+            const impulse = dvx * nx + dvy * ny;
+
+            if (impulse < 0) {
+              const impact = -impulse * 0.94;
+              a.vx -= impact * nx;
+              a.vy -= impact * ny;
+              b.vx += impact * nx;
+              b.vy += impact * ny;
+            }
+          }
+        }
+      }
+
+      sparks = sparks.filter(s => {
+        s.x += s.vx;
+        s.y += s.vy;
+        s.alpha -= 0.035;
+        return s.alpha > 0;
+      });
+    }
+
+    function drawTable() {
+      const cfg = MODES[currentModeKey];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#1b140e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = 'rgba(231, 188, 134, 0.35)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+
+      const clothGrad = ctx.createLinearGradient(0, TABLE.y, 0, TABLE.y + TABLE.h);
+      clothGrad.addColorStop(0, cfg.clothTop);
+      clothGrad.addColorStop(1, cfg.clothBot);
+      ctx.fillStyle = clothGrad;
+      ctx.fillRect(TABLE.x, TABLE.y, TABLE.w, TABLE.h);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(TABLE.x + TABLE.w * 0.24, TABLE.y);
+      ctx.lineTo(TABLE.x + TABLE.w * 0.24, TABLE.y + TABLE.h);
+      ctx.stroke();
+
+      const preview = !anyBallMoving() ? computeAimPreview() : null;
+
+      for (const p of pockets) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = '#050807';
+        ctx.fill();
+
+        if (preview && preview.highlightedPocket === p) {
+          ctx.strokeStyle = '#f6dcb6';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = 'rgba(231, 188, 134, 0.28)';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+        }
+      }
+
+      if (preview) {
+        ctx.save();
+        ctx.setLineDash([7, 6]);
+        ctx.strokeStyle = 'rgba(246, 220, 182, 0.78)';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(preview.start.x, preview.start.y);
+        ctx.lineTo(preview.end.x, preview.end.y);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.arc(preview.end.x, preview.end.y, getCueBall().r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(231, 188, 134, 0.45)';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+
+        if (preview.targetDir) {
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = preview.highlightedPocket ? '#f6dcb6' : 'rgba(231, 188, 134, 0.55)';
+          ctx.lineWidth = preview.highlightedPocket ? 2.2 : 1.5;
+          ctx.beginPath();
+          ctx.moveTo(preview.targetDir.originX, preview.targetDir.originY);
+          ctx.lineTo(
+            preview.targetDir.originX + preview.targetDir.x * 190,
+            preview.targetDir.originY + preview.targetDir.y * 190
+          );
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      for (const b of balls) {
+        if (b.potted) continue;
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rot);
+
+        ctx.beginPath();
+        ctx.arc(0, 0, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = b.color;
+        ctx.fill();
+
+        ctx.strokeStyle = b.color === '#f6f4ed' ? 'rgba(15, 25, 20, 0.35)' : 'rgba(0, 0, 0, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(-b.r * 0.3, -b.r * 0.3, b.r * 0.28, 0, Math.PI * 2);
+        ctx.fillStyle = b.isCue && cfg.whitePyramid ? 'rgba(255, 165, 178, 0.38)' : 'rgba(255, 255, 255, 0.55)';
+        ctx.fill();
+
+        if (b.label) {
+          ctx.fillStyle = '#111412';
+          ctx.font = `700 ${Math.round(b.r * 0.85)}px Montserrat, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(b.label, 0, 1);
+        }
+
+        ctx.restore();
+      }
+
+      const cue = getCueBall();
+      if (cue && !cue.potted && !anyBallMoving()) {
+        const offsetFromBall = 16 + cuePullback;
+        const cueLength = 210;
+        const tipX = cue.x - Math.cos(aimAngle) * offsetFromBall;
+        const tipY = cue.y - Math.sin(aimAngle) * offsetFromBall;
+        const buttX = cue.x - Math.cos(aimAngle) * (offsetFromBall + cueLength);
+        const buttY = cue.y - Math.sin(aimAngle) * (offsetFromBall + cueLength);
+
+        ctx.save();
+        ctx.lineCap = 'round';
+
+        ctx.strokeStyle = '#e6cfb0';
+        ctx.lineWidth = 4.2;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(
+          tipX - Math.cos(aimAngle) * (cueLength * 0.55),
+          tipY - Math.sin(aimAngle) * (cueLength * 0.55)
+        );
+        ctx.stroke();
+
+        ctx.strokeStyle = '#7c4724';
+        ctx.lineWidth = 6.2;
+        ctx.beginPath();
+        ctx.moveTo(
+          tipX - Math.cos(aimAngle) * (cueLength * 0.55),
+          tipY - Math.sin(aimAngle) * (cueLength * 0.55)
+        );
+        ctx.lineTo(buttX, buttY);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      for (const s of sparks) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(246, 220, 182, ${s.alpha})`;
+        ctx.fill();
+      }
+    }
+
+    function loopBilliard() {
+      updatePhysics();
+      drawTable();
+      requestAnimationFrame(loopBilliard);
+    }
+
+    function updateAimFromClientCoords(clientX, clientY) {
+      const cue = getCueBall();
+      if (!cue || isStriking) return;
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mx = (clientX - rect.left) * scaleX;
+      const my = (clientY - rect.top) * scaleY;
+      aimAngle = Math.atan2(my - cue.y, mx - cue.x);
+    }
+
+    let isTouchAiming = false;
+    let touchMoved = false;
+
+    tableWrap.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch' && !isTouchAiming) return;
+      updateAimFromClientCoords(e.clientX, e.clientY);
+      if (e.pointerType === 'touch') {
+        touchMoved = true;
+      }
+    });
+
+    tableWrap.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') {
+        e.preventDefault();
+        isTouchAiming = true;
+        touchMoved = false;
+        updateAimFromClientCoords(e.clientX, e.clientY);
+      }
+    });
+
+    tableWrap.addEventListener('pointerup', (e) => {
+      if (e.pointerType === 'touch') {
+        e.preventDefault();
+        updateAimFromClientCoords(e.clientX, e.clientY);
+        isTouchAiming = false;
+        strikeCueBall();
+      }
+    });
+
+    tableWrap.addEventListener('pointercancel', () => {
+      isTouchAiming = false;
+    });
+
+    tableWrap.addEventListener('click', (e) => {
+      if (e.pointerType === 'touch') return;
+      updateAimFromClientCoords(e.clientX, e.clientY);
+      strikeCueBall();
+    });
+
+    document.getElementById('resetBallsBtn').addEventListener('click', () => {
+      pottedCount = 0;
+      pottedCountEl.textContent = '0';
+      initBalls(currentModeKey);
+    });
+
+    powerSlider.addEventListener('input', () => {
+      powerValue.textContent = `${powerSlider.value}%`;
+    });
+
+    document.querySelectorAll('.format-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.format-tab').forEach(t => t.classList.remove('is-active'));
+        tab.classList.add('is-active');
+        const key = tab.dataset.mode;
+        const m = MODES[key];
+        document.getElementById('formatTitle').textContent = m.title;
+        document.getElementById('formatDesc').textContent = m.desc;
+        document.getElementById('stat1').textContent = m.s1;
+        document.getElementById('stat2').textContent = m.s2;
+        document.getElementById('stat3').textContent = m.s3;
+        document.getElementById('simModeBadge').textContent = m.badge;
+        initBalls(key);
+      });
+    });
+
+    initBalls('russian');
+    loopBilliard();
+
+    // ================= 3D КАРУСЕЛЬ ОТЗЫВОВ ИЗ ЯНДЕКС КАРТ =================
+    const reviewSlides = Array.from(document.querySelectorAll('#reviewsStage .review-slide'));
+    const reviewDots = Array.from(document.querySelectorAll('#reviewsDots .review-dot'));
+    const reviewsCarousel = document.getElementById('reviewsCarousel');
+    let activeReviewIndex = 0;
+    let reviewsAutoTimer = null;
+
+    function updateReviewsCarousel(newIndex) {
+      const total = reviewSlides.length;
+      if (!total) return;
+
+      activeReviewIndex = (newIndex + total) % total;
+      const prevIndex = (activeReviewIndex - 1 + total) % total;
+      const nextIndex = (activeReviewIndex + 1) % total;
+
+      reviewSlides.forEach((slide, idx) => {
+        slide.classList.remove('is-active', 'is-prev', 'is-next', 'is-hidden-left', 'is-hidden-right');
+
+        if (idx === activeReviewIndex) {
+          slide.classList.add('is-active');
+        } else if (idx === prevIndex) {
+          slide.classList.add('is-prev');
+        } else if (idx === nextIndex) {
+          slide.classList.add('is-next');
+        } else {
+          const forwardDist = (idx - activeReviewIndex + total) % total;
+          if (forwardDist > total / 2) {
+            slide.classList.add('is-hidden-left');
+          } else {
+            slide.classList.add('is-hidden-right');
+          }
+        }
+      });
+
+      reviewDots.forEach((dot, idx) => {
+        dot.classList.toggle('is-active', idx === activeReviewIndex);
+      });
+    }
+
+    function startReviewsAutoplay() {
+      stopReviewsAutoplay();
+      reviewsAutoTimer = setInterval(() => {
+        updateReviewsCarousel(activeReviewIndex + 1);
+      }, 5200);
+    }
+
+    function stopReviewsAutoplay() {
+      if (reviewsAutoTimer) {
+        clearInterval(reviewsAutoTimer);
+        reviewsAutoTimer = null;
+      }
+    }
+
+    document.getElementById('reviewsPrevBtn')?.addEventListener('click', () => {
+      updateReviewsCarousel(activeReviewIndex - 1);
+      startReviewsAutoplay();
+    });
+
+    document.getElementById('reviewsNextBtn')?.addEventListener('click', () => {
+      updateReviewsCarousel(activeReviewIndex + 1);
+      startReviewsAutoplay();
+    });
+
+    reviewDots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        updateReviewsCarousel(Number(dot.dataset.slide));
+        startReviewsAutoplay();
+      });
+    });
+
+    reviewSlides.forEach(slide => {
+      slide.addEventListener('click', () => {
+        const idx = Number(slide.dataset.index);
+        if (idx !== activeReviewIndex) {
+          updateReviewsCarousel(idx);
+          startReviewsAutoplay();
+        }
+      });
+
+      slide.addEventListener('mousemove', (e) => {
+        const rect = slide.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        slide.style.setProperty('--rx', `${x}%`);
+        slide.style.setProperty('--ry', `${y}%`);
+      });
+    });
+
+    if (reviewsCarousel) {
+      reviewsCarousel.addEventListener('mouseenter', stopReviewsAutoplay);
+      reviewsCarousel.addEventListener('mouseleave', startReviewsAutoplay);
+
+      let touchStartX = 0;
+      reviewsCarousel.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].clientX;
+        stopReviewsAutoplay();
+      }, { passive: true });
+
+      reviewsCarousel.addEventListener('touchend', (e) => {
+        const diff = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(diff) > 45) {
+          updateReviewsCarousel(diff < 0 ? activeReviewIndex + 1 : activeReviewIndex - 1);
+        }
+        startReviewsAutoplay();
+      }, { passive: true });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const rect = reviewsCarousel?.getBoundingClientRect();
+      if (!rect) return;
+      const inView = rect.top < window.innerHeight && rect.bottom > 0;
+      if (!inView) return;
+
+      if (e.key === 'ArrowLeft') {
+        updateReviewsCarousel(activeReviewIndex - 1);
+        startReviewsAutoplay();
+      } else if (e.key === 'ArrowRight') {
+        updateReviewsCarousel(activeReviewIndex + 1);
+        startReviewsAutoplay();
+      }
+    });
+
+    updateReviewsCarousel(0);
+    startReviewsAutoplay();
+
+    // ================= ПЕРЕКАТ ШАРА №8 =================
+    const ballTrack = document.getElementById('eightBallTrack');
+    const rollingBall = document.getElementById('rollingEightBall');
+    let ballAnimFrame = null;
+    let hasRolledOnce = false;
+
+    function rollEightBallLeftToRight(duration = 1500) {
+      if (!ballTrack || !rollingBall) return;
+      if (ballAnimFrame) cancelAnimationFrame(ballAnimFrame);
+
+      const bannerEl = ballTrack.closest('.booking-banner');
+      const bannerWidth = bannerEl ? bannerEl.getBoundingClientRect().width : 1100;
+      const ballWidth = rollingBall.getBoundingClientRect().width || 132;
+      const radius = ballWidth / 2;
+
+      const travelDistance = Math.max(320, bannerWidth - 180);
+      const startTime = performance.now();
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeOutCubic(progress);
+
+        const currentX = -travelDistance * (1 - eased);
+        const covered = travelDistance * eased;
+        const angleDeg = (covered / radius) * (180 / Math.PI);
+
+        rollingBall.style.transform = `translate3d(${currentX.toFixed(2)}px, 0, 0) rotate(${angleDeg.toFixed(2)}deg)`;
+
+        if (progress < 1) {
+          ballAnimFrame = requestAnimationFrame(step);
+        } else {
+          const finalAngle = (travelDistance / radius) * (180 / Math.PI);
+          rollingBall.style.transform = `translate3d(0px, 0, 0) rotate(${finalAngle.toFixed(2)}deg)`;
+        }
+      }
+
+      ballAnimFrame = requestAnimationFrame(step);
+    }
+
+    const bookingBannerEl = document.querySelector('.booking-banner');
+    if (bookingBannerEl && rollingBall) {
+      const rollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !hasRolledOnce) {
+            hasRolledOnce = true;
+            setTimeout(() => rollEightBallLeftToRight(1550), 180);
+          }
+        });
+      }, { threshold: 0.3 });
+
+      rollObserver.observe(bookingBannerEl);
+    }
+
+    if (ballTrack) {
+      ballTrack.addEventListener('click', () => {
+        rollEightBallLeftToRight(1350);
+      });
+    }
+
+    // ================= КОПИРОВАНИЕ И СКРОЛЛ НАВЕРХ =================
+    const toast = document.getElementById('toast');
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3600);
+    }
+
+    document.querySelectorAll('.js-copy').forEach(item => {
+      item.addEventListener('click', () => {
+        const val = item.dataset.copy;
+        navigator.clipboard?.writeText(val).catch(() => {});
+        showToast(`Скопировано: ${val}`);
+      });
+    });
+
+    document.getElementById('scrollTopBtn')?.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ================= МОДАЛЬНОЕ ОКНО =================
+    const modal = document.getElementById('bookingModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const clientGame = document.getElementById('clientGame');
+
+    function openModal(serviceText) {
+      if (serviceText) {
+        modalSubtitle.textContent = `Выбранное направление: ${serviceText}`;
+        Array.from(clientGame.options).forEach(opt => {
+          if (opt.value.toLowerCase().includes(serviceText.toLowerCase())) {
+            clientGame.value = opt.value;
+          }
+        });
+      } else {
+        modalSubtitle.textContent = 'Оставьте контакты, и администратор закрепит за вами лучший стол.';
+      }
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+
+    document.querySelectorAll('.js-open-modal').forEach(btn => {
+      btn.addEventListener('click', () => openModal(btn.dataset.service || ''));
+    });
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.getElementById('quickBookingForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const date = document.getElementById('bookingDate').value;
+      const time = document.getElementById('bookingTime').value;
+      openModal(`Бронь на ${date}, ${time}`);
+    });
+
+    document.getElementById('modalForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('clientName').value.trim();
+      closeModal();
+      e.target.reset();
+      showToast(`${name}, стол забронирован! Администратор скоро свяжется с вами.`);
+    });
+
+    // ================= ПАРАЛЛАКС БИЛЬЯРДНЫХ ШАРОВ (ПК + ТЕЛЕФОН) =================
+    (function initParallaxBalls() {
+      const container = document.getElementById('parallaxBallsLayer');
+      const balls = document.querySelectorAll('.p-ball');
+      const hero = document.querySelector('.hero-wrapper');
+      const footer = document.querySelector('.footer');
+
+      if (!container || !balls.length) return;
+
+      let ticking = false;
+
+      function updateBallsPosition() {
+        const isDesktop = window.innerWidth > 860;
+        const scrollY = window.scrollY;
+        const viewH = window.innerHeight;
+
+        const heroBottom = hero ? hero.getBoundingClientRect().bottom : 0;
+        const footerTop = footer ? footer.getBoundingClientRect().top : Infinity;
+
+        const isAfterHero = heroBottom < viewH * 0.45;
+        const isBeforeFooter = footerTop > viewH * 0.72;
+        const visible = isAfterHero && isBeforeFooter;
+
+        container.classList.toggle('is-active', visible);
+
+        if (visible) {
+          balls.forEach((ball, idx) => {
+            if (isDesktop && ball.classList.contains('p-ball--mobile-only')) return;
+
+            const speed = parseFloat(ball.dataset.speed) || 0.2;
+            const rotSpeed = parseFloat(ball.dataset.rot) || 0.1;
+
+            const cycle = viewH + (isDesktop ? 420 : 260);
+            const rawShift = scrollY * speed;
+            const wrappedY = ((rawShift % cycle) + cycle) % cycle - cycle / 2;
+            const angle = scrollY * rotSpeed + idx * 18;
+
+            ball.style.transform = `translate3d(0, ${wrappedY.toFixed(1)}px, 0) rotate(${angle.toFixed(1)}deg)`;
+          });
+        }
+
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(updateBallsPosition);
+          ticking = true;
+        }
+      }, { passive: true });
+
+      window.addEventListener('resize', updateBallsPosition, { passive: true });
+      updateBallsPosition();
+    })();
+  </script>
+</body>
+</html>
